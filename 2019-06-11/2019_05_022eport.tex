@@ -1,0 +1,214 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/6/4 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{フライトコントローラへの振動対策}
+前回のミーティングにて位置保持制御の精度を向上せせるため,ドローンの角度制御の$Kp$の値を上げることを考えた.フライトコントローラに余計な振動が入らなければ,$Kp$を上げることが出来るとの記述を見たため,フライトコントローラを固定するステーやUWBをマウントした基盤などの間にOリングを挿入した.Fig.\ref{1},\ref{2}にPixracerにて記録した振動の値を示す.Fig.\ref{1}は施す前の振動の計測値であり,Fig.\ref{2}が施した後の結果である.図から分かるように,ホバリング時でのZ軸加速度（青色）が以前は平均14$\rm{m/s^2}$であるのに対し,Oリングを挿入した時の方は平均2$\rm{m/s^2}$であり,確かに振動が軽減されていることが分かる.
+しかし,振動は軽減されているものの,Oリングを挿入した際の方が角度制御ゲイン$Kp$を上げられるといったことはなく,それに伴い,位置保持の精度が向上するという結果も得られなかった.
+
+
+
+
+\section{UWBからの更新周波数が遅くなる問題}
+下の実験室にて位置保持実験をするようになってから,一度も精度良く成功する結果を得られていない.上記のような応答性が良くなるアプローチやバッテリホルダを見直すことでの重心の調整などの工夫を行ってきたが,どれも大きな改善は得られなかった.そこで,UWBからの距離の測定値を見てみると,更新周波数が飛翔部屋で実験を行っていたときよりも大きく落ち込んでいることに気がついた.Fif.\ref{3}に飛翔部屋でのFig.\ref{4}に実験室でのUWB間の距離計測値の結果を示す.距離計測は1つのドローン側のタグと4つのアンカにて行われるが,図に示すのは1つのアンカとの計測値である.他の3つとのアンカの計測値も確認したが結果は同様である.それぞれの図から分かるように,飛翔部屋での結果はおよそ10Hz前後で更新できているのに対し,実験室の結果はおよそ1Hzでしか更新できていないことが分かる.これの原因として考えられるのはアンカを設置する距離が伸びたことである.ドローン側のタグはそれぞれのアンカと相互通信し,電波の返ってきた時間より,距離を求めている．実験室では飛翔部屋に比べ,UWB間の距離が長いため,電波が返ってくる時間が長くなり,このような更新周波数の低下に繋がっていると考えられる．今後の考えられる方針についてまとめてみた．
+
+\begin{itemize}
+\itemsep=-1ex
+  \item UWB間の距離を短くし,以前と同じような実験空間にし,他の位置制御実験を行う（位置保持だけでなく2点間の移動や円形など）
+  \item 今までと同様にUWB＋IMUだけで位置を推定できるようにUWBの更新周波数が高くなるようにハード,ソフトにより改善する
+  \item 1Hzでは更新できるので,更新周波数は据え置き（この設置条件）でオプティカルフローセンサにて推定精度を上げる
+\end{itemize}
+
+他のメーカが開発する位置推定のためのUWBモジュールをいくつか示す．
+
+
+\begin{itemize}
+\itemsep=-1ex
+  \item Pozxy（Fig．5）(https://www.pozyx.io/shop/product/creator-kit-65) Ardupilotとリンクさせて位置制御を行っている実績あり． 
+  \item P440 (Fig．6）（https://store.bitcraze.io/collections/positioning/products/loco-positioning-deck）以前に示した中国の学生が研究室メンバと共に頻繁に使用．しかし，重いので今のドローンには搭載不可
+  \item bitcraze(Fig．7)（https://store.bitcraze.io/collections/positioning/products/indoor-explorer-bundle）これ専用のドローン向けのため搭載は難しい．
+\end{itemize}
+
+
+
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{before.png}
+     \caption{振動対策前のフライトコントローラ（Pixracer）の振動データ（左軸$\rm{m/s^2}$）}
+	及びプロポからの入力（右軸$\rm{\mu sec}$）
+     \label{1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{after.png}
+     \caption{振動対策後のフライトコントローラ（Pixracer）の振動データ（左軸$\rm{m/s^2}$）}
+	及びプロポからの入力（右軸$\rm{\mu sec}$）
+     \label{2}
+  \end{center}
+\end{figure}
+
+
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{before_high_sample.png}
+     \caption{タグとアンカの距離が近い場合（飛翔部屋）のUWBからの距離データ}
+     \label{3}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{after_low_sampling.png}
+     \caption{タグとアンカの距離が遠い場合（実験室）のUWBからの距離データ}
+     \label{4}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{image.jpg}
+     \caption{Pozxy}
+     \label{3}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{無題.png}
+     \caption{P440}
+     \label{3}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{indoor-explorer-bundle-21-1024px_1024x1024.jpg}
+     \caption{bitcraze}
+     \label{3}
+  \end{center}
+\end{figure}
+
+
+
+\section{今後の予定}
+他のUWBモジュールの調査及び，オプティカルフローセンサのプログラムへの実装
+
+\begin{thebibliography}{1}
+
+\small
+
+\vspace{-2mm}
+\bibitem{vibration}
+\label{vibration}
+``Vibration Damping'', \\
+http://ardupilot.org/copter/docs/common-vibration-damping.html common-vibration-damping, 2019年6月4日閲覧.
+
+%\bibitem{ラベル}
+%著者，
+%題名，
+%誌名＋ページ，
+%年月.
+
+\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

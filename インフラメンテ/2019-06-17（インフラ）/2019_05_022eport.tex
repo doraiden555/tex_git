@@ -1,0 +1,196 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/6/18 インフラUAVミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{研究概要}
+\subsection{ドローンの構成}
+Fig．1に研究にて使用する位置制御ドローンを示す．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{Quad-rotor.png}
+     \caption{位置制御ドローン}
+     \label{1}
+  \end{center}
+\end{figure}
+
+また，このドローンのマイコン，センサ類の関係をFig．2に示す．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{スライド1.png}
+     \caption{マイコン及びセンサの関係図}
+     \label{1}
+  \end{center}
+\end{figure}
+
+本研究での最終目標はインフラ点検用の自立飛行が可能なドローンを作製することである．自立飛行の具体的な方法はUWBモジュールと呼ばれる電波の返ってきた時間（ToF）より距離の計測が可能なセンサ及び9軸IMU（加速度，ジャイロ，地磁気）を用いてドローンの自己位置を推定し，その推定値を基にドローンの位置を制御する．Fig．2右上がUWBモジュールの移動局（Tag）であり，壁に取り付けた4つの固定局（Anchor）とそれぞれ通信を行う．また，高さの計測はUWBだけでなく，Fig．2左の距離センサも用いて推定値の精度を上げている．NAVIO2には各種9軸センサなどのセンサ類を積んでいる．センサ値の統合や位置の推定などの計算は全てRaspberry Piと呼ばれるLinuxコンピュータにて行う．また，ドローンの姿勢角制御は右下のPixracerと呼ばれるフライトコントローラが担っており，推定座標と目標座標との偏差から計算した角度の司令値をRaspberry PiからPixracerに送ることでドローンの動きを制御している．
+
+
+\subsection{位置推定，位置制御の流れ}
+具体的なシステムのブロック線図をFig．3に示す．UWBからの距離データより推定した位置の座標と加速度センサから得た値を二回積分したもの（変位）をカルマンフィルタによりフュージョンすることで推定値の精度を上げている．UWBからの距離データを基に位置を推定する方法は衛星とGPS端末の距離から位置を推定する方法と同様の三辺測量の手法を用いている（Fig．4）．固定局の座標が既知であり，固定局と移動局との間の距離が計測できると，方程式を解くことにより，移動局の位置座標が求められる．UWBモジュールは現在10Hzにて距離計測が行え，これだけでは推定値が離散的になるため，UWBの点と点の間を補完する形で加速度センサの積分値を用いている．
+
+
+\begin{figure*}[htbp]
+  \begin{center}
+     \includegraphics[width=0.8\linewidth]{スライド2.png}
+     \caption{システムのブロック線図}
+     \label{1}
+  \end{center}
+\end{figure*}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{Positional_relationship_between_the_anchors_and_the_quad-rotor.png}
+     \caption{三辺測量の方法を用いた位置の推定方法}
+     \label{1}
+  \end{center}
+\end{figure}
+
+
+\section{現在取り組んでいる内容}
+前述した位置推定方法及び位置制御方法を用いて実験をした結果，次のFig．5のような結果を得ている．この実験では初めにドローンを地面に置いた位置を原点$(x,y,z)=(0,0,0)$とし，目標値$(x,y)=(0,0)$に収束できるように位置制御を行った結果である．なお，墜落時に備え，スロットル制御に関しては自身で行っている．図より，約40cmの範囲内で位置制御が出来ていることが分かる．UWBの測距精度が数10cm程度であるので，妥当な結果であるが，他の研究では，UWBや加速度センサの値を組み合わせることで10cm程度の誤差内で位置制御できている研究や商品も存在するので，この程度の精度は目指したいと考えている．
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{result.png}
+     \caption{位置保持実験の結果}
+     \label{1}
+  \end{center}
+\end{figure}
+
+\vspace{-2zh}
+
+
+\subsection{UWBからの距離データのサンプリングレートの向上}
+現在，UWBからの距離データは10Hz程度で更新されている．しかし，環境（UWB間の距離？）によってこのサンプリングレートが1Hz程度まで落ちる問題があることや，動きのそれなりに速いドローンを10Hz程度で位置制御するのは難しいといったことがあるため，このサンプリングレートを向上できるようアプローチを行っている．IMUでUWBの点間を補完するにしてもUWB単体で30Hz程度は更新周波数が欲しいと考えている．現在，UWBモジュールのプログラムを見直し，送信する文字列の長さやデータレートを調整することで，1Tag，1Anchor間において約30Hzまでサンプリングレートを向上させることに成功した．ドローンの位置を推定するのに必要な最低3個のAnchorにおいてもこの周波数が出せるようにしていくつもりである．
+
+\subsection{オプティカルフローセンサの導入の予定}
+次の図のようなオプティカルフローセンサと呼ばれる単位時間当たりの特徴点の変位から移動量を求められる光学センサが存在する．求められる値は単位時間あたりの移動量なので，ドローンの速度制御，つまりドローンが左右に振れてしまう運動を抑制することができる．また，単位時間の移動量を積分すればある程度の総移動距離も求まるので，位置推定に組み込むことも考えている．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.5\linewidth]{optical.jpg}
+     \caption{オプティカルフローセンサ}
+     \label{1}
+  \end{center}
+\end{figure}
+
+
+\section{今後の予定}
+・UWBのサンプリングレートを向上させ，位置推定及び位置制御実験．\\
+・オプティカルフローセンサのプログラムへの実装
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{vibration}
+%\label{vibration}
+%``Vibration Damping'', \\
+%http://ardupilot.org/copter/docs/common-vibration-damping.html common-vibration-damping, 2019年6月4日閲覧.
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

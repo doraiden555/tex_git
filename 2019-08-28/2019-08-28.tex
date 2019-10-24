@@ -1,0 +1,181 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/8/27 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{オプティカルフローセンサ値のカルマンフィルタへのフュージョン}
+オプティカルフローセンサを用いて観測した速度値をカルマンフィルタの計算に組み込んだ．Fig.1の様にクアッドロータにオプティカルフローセンサが下を向くように設置した．オプティカルフローセンサの値をArduino Pro Miniにて拾い，シリアル通信にてRaspberry Piに送っている．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/20190827_184737.jpg}
+     \caption{クアッドロータに設置したオプティカルフローセンサ}
+     \label{1}
+  \end{center}
+\end{figure}
+
+
+センサの軸がクアッドロータの座標系と揃うようにプログラムで修正し，$x$,$y$方向の速度及び変位を推定した．UWBは使用せず，内部の加速度センサの積分値とオプティカルフローセンサの速度値のフュージョンである．Fig.2に推定した速度，Fig.3に変位を示す．なお，オプティカルフローセンサから得た速度の値は前回に示した方法により対象物との距離によってキャリブレーションしてある．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/velocity.png}
+     \caption{カルマンフィルタにより推定した速度とオプティカルフローセンサから得た速度}
+     \label{1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/displacement.png}
+     \caption{カルマンフィルタにより推定した変位とオプティカルフローセンサから得た速度の積分値}
+     \label{2}
+  \end{center}
+\end{figure}
+
+まず，速度のグラフより，オプティカルフローセンサの値は谷と山にて細かく振動しているのに対し，推定値は加速度センサの値も加わることにより，うまくその振動を抑えることができており，位相遅れもほぼないことが分かる．現在，クアッドロータの位置制御では，現在座標と目標座標とでPID制御を組んでいるが，D項は偏差の微分（速度）を用いている．この項に対し，本実験で推定した速度を用いることができれば，位置制御中の機体の細かい振動を取り除くことができると考えている．
+
+次に変位のグラフであるが，推定値とオプティカルフローセンサの積分値にオフセット誤差があるのは，速度を積分し始める時間がArduinoの方が先でRaspberry Piでは遅れて積分し始めるからである．このグラフも速度の結果と同様にオプティカルフローセンサの細かい振動を加速度センサの効力により取り除けていることが分かる．次はUWBからのセンサ値も組み込んで位置，速度推定をしていくつもりである．
+
+\section{1つのTeensyにてUWBとオプティカルフローセンサの値を拾えるようにする}
+前章にて述べた通り，オプティカルフローセンサとUWBの2つのセンサ値を得る必要があるため，一つのTeensyにて2つのセンサ値を拾えるようにプログラムを書いている最中である．オプティカルフローセンサボードにはオプティカルフローセンサ（SPI）と距離センサ（I2C)のセンサが載っており，これらに加えUWB（SPI)の値も取得しなければならない．最初は2つのプログラムを上手く組み合わせることで，簡単に全てのセンサ値を取得できると考えていたが，2種間のライブラリの相性が悪いのか，どちらか片方ずつのセンサしか動かない状況が続いている．SPIセンサが2つあるため，これらが競合している可能性が考えられる．複数のSPI機器の同時使用の際のプログラムについてもう少し勉強する必要がある．
+
+
+
+\section{今後の予定}
+\begin{itemize}
+\itemsep=-1ex
+  \item 1つのマイコンにて複数センサ値の取得
+  \item UWBデータをフィルタに組み込む
+\end{itemize}
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

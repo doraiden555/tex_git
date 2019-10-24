@@ -1,0 +1,214 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/9/13 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{UWBモジュールの通信方式の変更}
+以前から話していた，2つのセンサ（UWB＋オプティカルフローセンサ）から値を得られないという問題の解決を行ったていた．SPIではうまく行かないと考えたため，I2CによるUWBの通信を試していた．しかし，4つの値（UWBから送られてくる各Anchorとの距離）の現在ほしい値の上位Byteと前の値の下位Byteが混ざってしまい，2Byteで表現できる最大の値近く（32768）を記録していた．Arduino，Raspberry Pi間の通信を疑っていたが，やはりそうであった．ArduinoにおけるI2C通信では，値をArduino側から送る際は，外部から欲しいデータ数（Byte）を要求し，それに応答する形でデータを送る．その際にArduino側ではset up文中にWire.onRequest(\textbf{関数});というコマンドを記し，外部から要求が来るたびに定義した送信用の\textbf{関数}が割り込みで実行される．しかし，この関数の呼び出し周期を速くしすぎると，前の値と現在の値がBit演算にて混ざるという現象が発生し，値がおかしくなるということが判明した．したがって，最初は値を要求するRaspberry Pi側にてdelayを挟んでいたが，これでは解決せず，Arduinoの割り込みで発生する関数内にdelayを挟むことによって値がおかしくなるということはなくなった．
+
+\section{UWBモジュールの基板の改良}
+前章にて述べた通り，UWBモジュールを以前から用いていたUART通信ではなくI2C通信にて運用するに伴って基板の改良を行った．Fig.1に示すように以前から用いていた基板にI2C用のコネクタを新たに追加した．動作検証を行ったが，うまく機能していた．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/I2C.PNG}
+     \caption{新たに追加したI2Cポート}
+     \label{1}
+  \end{center}
+\end{figure}
+
+\section{プログラムの修正}
+オプティカルフローセンサの値をカルマンフィルタに組み込むにあたって，Pythonプログラムの修正を行っている最中である．観測方程式を
+
+\begin{eqnarray}
+\textbf {y}(t)=\textbf {h}_t(\textbf {x}(t)) + \textbf {v}_t,
+\end{eqnarray}
+
+\noindent とすると，オプティカルフローセンサから得られたセンサ値を加えた観測関数及び観測ベクトルはそれぞれ
+
+\begin{eqnarray}
+\label{kansoku}
+\textbf {h}_t(\textbf {x}(t))
+= 
+\left[
+\begin{array}{cccccccccccc}
+g\sin\theta  \\
+-g\cos\theta \sin\phi \\
+-g\cos\theta \cos\phi \\
+z \\
+\sqrt{(x-x_1)^2+(y-y_1)^2+(z-z_1)^2}  \\
+\sqrt{(x-x_2)^2+(y-y_2)^2+(z-z_2)^2}  \\
+\sqrt{(x-x_3)^2+(y-y_3)^2+(z-z_3)^2}  \\
+\sqrt{(x-x_4)^2+(y-y_4)^2+(z-z_4)^2}  \\
+z \\
+\psi \\
+v_x \\
+v_y \\
+\end{array}
+\right]_.
+\end{eqnarray}
+
+
+\begin{eqnarray}
+\begin{split}
+\textbf {y}(t) = [a_{bx},a_{by},a_{bz},d_h,d_1,d_2,d_3,d_4,d_h, \\
+\textrm{Yaw}_{\textrm{pix}},deltaX,deltaY]^T
+\end{split}
+\end{eqnarray}
+
+となる．式（2）中の$v_x$，$v_y$はカルマンフィルタによって推定される$x$方向，$y$方向の速度であり，式（3）中の$deltaX$，$deltaY$はオプティカルフローセンサにより観測される値である．この式を基にプログラムの実装及びバグの修正を行っていきたい．
+
+
+\section{新しい機体の製作}
+購入させて頂いたパーツが続々と届いているので新しい機体の製作を行っている．Fig.2に製作中のクアッドロータを示す．eCalc\cite{1}というモータのメーカやバッテリ容量から追加のペイロードや飛行時間を計算してくれるサイトを用いてそれらを計算したところ，追加のペイロードは約500gとなり，飛行時間は約5分という数値を得た．購入したプロペラは直径8インチ，ピッチ4.5インチのものであるが，モーターシャフトに対して穴が小さい（6mm）ため，8mmのドリルにてプロペラの穴を拡張する必要がある．その際に穴の中心が少しずれて空いてしまうため，推力の効率が悪くならないかを少し懸念している．プロペラの穴の経が大きいものも探してみたが，ほとんどのものがこれと同様の6mmのため，今後もこの方法を取らざるを得ないと考えている．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.8\linewidth]{./figure/quad.jpg}
+     \caption{製作中のクアッドロータ}
+     \label{1}
+  \end{center}
+\end{figure}
+
+
+
+\section{今後の予定}
+\begin{itemize}
+\itemsep=-1ex
+  \item プログラムの実装
+　\item 新しいクアッド機の製作
+\end{itemize}
+
+
+
+\begin{thebibliography}{99}
+\bibitem{1}eCalc, https://www.ecalc.ch/xcoptercalc.php?ecalc\&lang=jp.
+\end{thebibliography}
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

@@ -1,0 +1,187 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/8/5 インフラUAVミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{学会にて発表する実験結果}
+\subsection{原点での位置保持実験}
+以前から行ってきた，原点におけるドローンの位置制御実験を広い空間に変更して再度行った．UWBアンカの絶対座標をTable \ref{anchors}に示す．
+
+\begin{table}[htbp]
+  \caption{Absolute position of anchors}
+  \label{anchors}
+  \centering
+  \begin{tabular}{lccc}
+    \hline
+     & $x$ position [m]& $y$ position [m]& $z$ position [m]\\
+    \hline
+    Anchor1  & -3.50   &  2.00 & 1.82 \\
+    Anchor2  & 3.50   & 2.00& 1.82\\
+    Anchor3  & 3.50 & -2.00& 1.82\\
+    Anchor4  & -3.50 & -2.00& 1.82\\
+    \hline
+  \end{tabular}
+\end{table}
+
+高さ制御も調整を行ってきたが，誤差20cm以内には収めることができず，また，ゲインの調整中にミスをしてしまい，2回ほどドローンを壊してしまったので，今回も高さ制御はせずに，スロットルのみ自身で操作した．結果をFig. \ref{position_control_origin}に示す．
+
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[clip, width=5.0cm]{./fig/position_control_origin.png}
+    \caption{Result of static position hold experiment for 2 minutes}
+    \label{position_control_origin}
+  \end{center}
+\end{figure}
+
+結果は真値ではなく推定値である．原点からの標準偏差は0.083mであり，最大誤差は0.406mであった．設定位置から$x$方向$y$方向共に正の方向へ定常偏差が残っていることが分かる．位置制御ゲインの$Ki$の値をもう少し調整すれば，この定常偏差はなくせると考えている．
+
+
+\subsection{3点を移動する位置制御}
+次に1点だけでなく複数点を移動しながら位置制御する実験を行った．アンカの設置箇所は前の実験と同様であり，座標の目標値をTable  \ref{Coordinate of way points}のように与えた．結果をFig. \ref{point_to_point}に示す．
+
+
+\begin{table}[htbp]
+  \caption{Coordinate of way points}
+  \label{Coordinate of way points}
+  \centering
+  \begin{tabular}{lcc}
+    \hline
+     & $x$ position [m]  & $y$ position [m]\\
+    \hline
+    Point0 (Origin)   & 0.0     &   0.0     \\
+    Point1             & 1.5     &   -1.0   \\
+    Point2             &  -1.5   &   1.0    \\
+    \hline
+  \end{tabular}
+\end{table}
+
+
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[clip,width=5.0cm]{./fig/point_to_point.png}
+    \caption{Result of moving point to point experiment}
+    \label{point_to_point}
+  \end{center}
+\end{figure}
+
+
+
+各目標点において定常偏差は存在するものの，各点間を移動する際も大きく経路を逸脱したり，目標点から大きくオーバーシュートしたりするといったことはなかった．移動した点において定常偏差が存在する理由は1つ目の実験と同様の$Ki$の調整不足に加え，ドローンの運動性能の低さや制御中に徐々にヨー角がドリフトしていることにも理由があると考えている．本ドローンはセンサやケーブルなどを積むことで，重量が増し，運動性能がぎりぎりの状態であるため，姿勢角の命令に対してうまく機体が応答できていないと考えられる．もう少し推力に余裕のあるものに機体を交換すればこの問題は解決できると考えている．また，ヨー角は角速度センサの積分と地磁気センサとのフュージョンで推定しているが，飛行中にモータや周りの磁気の影響で誤差が乗り，ドリフトしてしまう．したがって，フライトコントローラに標準装備された地磁気センサではなく，外付けの精度の良い地磁気センサに交換すればこのヨー角がドリフトする問題は解決できると考えている．
+
+
+\section{学会に参加させて頂くにあたって}
+来年の1月にハワイにて開催されるSIIという学会に論文を投稿し，参加させていただこうと考えているため，先生方には共著者としてお名前を貸していただきたいと考えています．後にURLの載ったメールを送らせていただきますのでサイトに登録しPINコードを発行していただき，それをお伝えいただければと思います．よろしくお願いします.
+
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{vibration}
+%\label{vibration}
+%``Vibration Damping'', \\
+%http://ardupilot.org/copter/docs/common-vibration-damping.html common-vibration-damping, 2019年6月4日閲覧.
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

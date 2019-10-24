@@ -1,0 +1,180 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/7/30 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{論文の執筆}
+以前から執筆中の論文の投稿締切が8/10に迫っているので，懸命に執筆中である．今回の学会の論文に使用するフォーマットには色々と細かい制約や決まり事があるため，これらに違反しないよう注意がけて執筆している（Eq. (1)やequation (1)は使わずに（1）のみを使用することなど）．
+
+
+\section{高解像度版オプティカルフローセンサの動作確認}
+以前，簡単な移動距離の測定の実験に使用していた光学式のオプティカルフローセンサ''VL53L0x/PMW3901搭載 ToF測距/オプティカルフローセンサモジュール''(Fig. \ref{1})とは異なり，カメラで撮影した画像から移動量を計算するタイプのオプティカルフローセンサ''CUAV PX4FLOW 2.1 Optical Flow Sensor Smart Camera for PX4 PIXHAWK Flight Control ''(Fig. \ref{2})を購入させて頂いたので，動作検証を行っていた．このセンサは名前の通りPixhawk（普段使用しているFC，Pixracerの上位互換機）に対応する．したがって，コネクタの口などがPixhawk用になっている．
+
+
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.8\linewidth]{./figure/optical_flow.jpg}
+     \caption{光学式オプティカルフローセンサ}
+     \label{1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.8\linewidth]{./figure/CUAV.jpg}
+     \caption{カメラタイプのオプティカルフローセンサ}
+     \label{2}
+  \end{center}
+\end{figure}
+
+
+しかし，出ている信号はただのI2Cであるのでコネクタさえ付け替えればPixracerやArduinoにおいてもきちんと使用できるようになると考えている．コネクタを一旦Pixracer用にコネクタを付け替えて自身の制御に組み込まずに飛行制御をPixracer丸投げのポン付けで飛ばして遊んでみるか，もしくは最初からArduino用にして自身の位置推定用のプログラムに組み込んで位置推定の精度が向上するかを確認するかのどちらから行うかを検討中である（重量の余裕と体育館の床の兼ね合いがうまくいけば，飛行ロボコンの機体にも載せたい...）．このセンサはFig. \ref{1}のセンサと異なり，マイコンが乗っているため（Cortex M4），マイクロUSB経由でファームをアップデートしたり，パラメータをグラウンドステーションから変更したりすることが出来る．試しにグラウンドステーション（Mission Planner）とUSBで繋ぎ，画像が読み取れるかテストしたのでFig. \ref{3}にその際の様子を示す．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.8\linewidth]{./figure/flow_test.png}
+     \caption{カメラタイプのセンサの動作テスト}
+     \label{3}
+  \end{center}
+\end{figure}
+
+焦点距離はリングを回すことによって調整できるので，目標高度における対象物との距離に合わせて焦点距離を事前に調整しておく必要がある．Fig. 3では試しに1m先にある対象物との焦点距離を合わせてみた．高解像度モードに設定すると非常に鮮明な画像を撮影できた．しかし，光源が少ないと，非常に画像が暗くなるため，多くのオプティカルフローセンサを扱う論文でも言及されている通り，精度良く移動量を推定するためには強い光源が確保できる環境（蛍光灯できちんと照らした室内など）が必要なことが予想できる．また，Arduino用のライブラリを見つけ，このライブラリは高度センサからの値を用いて移動距離や速度を補正して計算してくれるため，これを一度使用してみたいと考えている．
+
+
+\section{今後の予定}
+\noindent ・学会用論文の執筆\\
+\noindent ・オプティカルフローセンサをArduinoと通信させて速度や移動距離の推定をする
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

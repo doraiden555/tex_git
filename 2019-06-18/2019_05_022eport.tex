@@ -1,0 +1,175 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/6/18 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{UWBのAnchorを以前と同じ条件に戻しての実験}
+以前のミーティングにてUWBのAnchorの距離が大きくなると，うまくドローンの位置を制御できないといった問題があった．この問題に対処すべく，Anchorの位置を飛翔部屋と同じ位置の条件に戻して再度，位置保持実験を行った．飛翔部屋を模したAnchorの座標はAnchor1（-2.3,2.0,1.763），Anchor2（2.3,2.0,1.763），Anchor3（2.3,-2.0,1.763），Anchor4(-2.3,-2.0,1.763)．実験室での大きい空間でのAnchorの座標はAnchor1（-5.460,2.698,1.763），Anchor2（5.460,2.698,1.763），Anchor3（5.460,-2.698,1.763），Anchor4(-5.460,-2.698,1.763)である．結果としては飛翔部屋よりも良くも悪くもなく同じような位置保持結果を得た．この実験では，50ｃｍ以下の振動は発生したものの，位置が大きく発散することはなかった．そして，再び，Anchorの位置を再度大きい空間にして位置保持実験も行ったが，ドローンの位置が振動し，最終的に発散して壁に衝突してしまった．UWBからの距離データが発散することの問題は解決できているため，やはり以前にも述べた通り，サンプリングレートの低下が怪しいと踏んでいる．したがって，次々章で示すUWBの通信レートを上げるアプローチを今週はメインで行っていた．
+
+
+
+
+\section{高度保持実験}
+しばらく，$x,y$平面内での位置制御ばかりに目を向けており，高さ制御のゲインを決めきれていなかったことに目を向け，高さ制御の実験を行った（動画参照）．本実験ではThrottleのみ制御し，Pitch，Rollは自身で操作している．ゲインを適切に定めることで40cmほどの振動はあるものの，以前よりも上手く制御できていると思われる（Fig．1）．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{height_controll.png}
+     \caption{高さ制御の結果}
+     \label{1}
+  \end{center}
+\end{figure}
+
+
+
+
+\section{UWBの更新周波数向上のためのアプローチ}
+調査により，UWBの通信には複数のモードがあり，ビットレート（kbit/s），プリアンブル長（-），電力消費量（精度or省電力）を設定することができる．以前にも示したPozyxのフォーラムサイトではPozyxに関しては，ビットレートを上げ，プリアンブル長を短く設定することで，測距できる最大距離は短くなるものの，通信速度が速くなるという記述を見たため，回路を組み，パラメタを変えながら実験した（Fig．2）．図に示すように予備のUWBモジュールとTeensyやArduinoを組み合わせて，様々なパラメタの値を検証した．しかし，理論上最もサンプリングレートが高いとされるモード，6.8Mbit/sかつプリアンブル長が1024におけるモードであっても，以前からの10Hzというサンプリングレートを向上させることは出来なかった(Fig．3)．しかし，パラメタやマイコンの組み合わせを変えても毎回，サンプリング間隔が102msecなことに気が付き，プログラム側でなにか意図的なディレイが挟んであると考えた．UWBモジュールのチップの掲示板を参考にライブラリの中にあったタイマーの所の数値を短い値に書き換えたところ，サンプリング間隔が調整できることに気づいた．タイマーの値はマイコンの処理能力やTAGの数によって動的に調整されるらしいが，どうもこれが短くなる側には調整されないと予想している．この値を以前の80msecから10msecまで調整したところ，1TAG，1Anchorにおいて，およそ30Hzでのサンプリングに成功した（Fig.4）．また，この際，プリアンブル長とデータレートも調整している．したがって，測距可能最大距離も短くなっていると考えられるが，高いサンプリングレート値（おそらく100Hz前後）の設定であっても，10mまでの距離なら測距可能とbitcrazeのフォーラムでは書いていたので，30Hz前後までの低い周波数なら10m以上の距離は測距可能であると考えている．よく話に上がる中国の学生の研究でも30HzにおけるUWBの更新レートにおいて，うまく位置制御できていることを考えれば，この30Hzを出せたことは意義が大きいと考えている．現在は1Tag，1Anchorのみの実験であったため，1Tag，4Anchorにおける条件であってもこの周波数を出せるか検証していくつもりである．
+
+
+
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{20190614_174450.jpg}
+     \caption{UWBの実験回路}
+     \label{1}
+  \end{center}
+\end{figure}
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{low_sampling.png}
+     \caption{約10HzでのUWBからのデータ}
+     \label{1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{high_sampling.png}
+     \caption{約30HzでのUWBからのデータ}
+     \label{2}
+  \end{center}
+\end{figure}
+
+
+
+
+
+\section{今後の予定}
+UWBモジュールを複数個用いた際にも30Hzのレートを出せるかの検証
+
+\begin{thebibliography}{1}
+
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{vibration}
+%\label{vibration}
+%``Vibration Damping'', \\
+%http://ardupilot.org/copter/docs/common-vibration-damping.html common-vibration-damping, 2019年6月4日閲覧.
+
+%\bibitem{ラベル}
+%著者，
+%題名，
+%誌名＋ページ，
+%年月.
+
+\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

@@ -1,0 +1,148 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/6/4 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{バッテリホルダの見直し}
+今まで改良を後回しにしてきたバッテリホルダの見直しを図った．理由としては，バッテリ交換の度にバッテリの位置が微妙にずれ，姿勢角制御に少なからず影響が出ると考え，これを回避するためである．今まではFig.\ref{1}に示すような上下でバッテリを保持するようなケースを用いてバッテリを積んでいた．しかし，このケースは以前に用いていたバッテリサイズに合わせて設計されており，私がこのドローンを受け継いだ当初より使用している違う種類のバッテリでは寸法が合わない．したがって，ゴムブッシュで寸法を調整して現在のバッテリを搭載していた．しかし，ケースとバッテリとの間に微妙な隙間があるため，バッテリを載せ替えるたびに毎回，場所がずれてしまっていた．したがって，重心が毎回ずれるため，これをトリムで飛行の度に調整していた．トリムで姿勢角を調整すれば，ドローンを水平には保てるが，ロータ間で回転数が異なり，制御する方向によって応答性が異なるといったことになると考えている．以上の理由より，バッテリを毎回きちんと重心近くに設置できるように3Dプリンタによりホルダを作成した（Fig.\ref{2}）．固定方法は以前のケースにように挟む式ではなく，タイラップで留める方法にした．これにより，下側にケースが要らなくなったため，7.5gの軽量化になった．何回かテストフライトを行ったが強度的にも十分であることが分かった．
+
+
+
+\section{姿勢角制御における応答性改善の工夫}
+今までの位置保持実験における誤差を解消し，位置制御の精度を向上させる目的でPixracerにおける姿勢角制御の応答性を改善するアプローチを行っている．以前にアドバイスを頂いたとおり，姿勢角制御における$Kd$の値を下げると，$Kp$の値をそれほど下げなくても振動は起こらなくなった．しかし，まだまだ$Kp$の値は小さく，まだ攻められる（上げられる）と考えている．というのも，フォーラムなどではフライトコントローラの振動絶縁が適切に行われていれば，$Kp$の値はそれほど下げる必要はないと書かれていた．Raspberry Pi及びNavio2は以前よりシリコンフォームにて振動絶縁が施されているが，PixracerやUWB関係を上に積むことにより，重心が高くなってしまってい，その効果も薄くなっていると考えられる．そこで，Oリング（Fig.\ref{3}）を，各スペーサ間やネジの締結部に挟むことによって，Pixracerに入る余計な振動を取り除くつもりである．また，Pixracerにはフライトしたときのログを自動的にメモリーカードに保存するフライトレコーダとしての機能があり，これを用いて加速度を読み，Pixracerが拾う振動が軽減されたかを確認するつもりである．しかし，今のところ，SDカードの相性問題なのか（フォーラムにはこの可能性が高いと書かれている），ログが保存できない状況のため，SDを別のものに取り替えるなどして改善したいと考えている．
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{1.jpg}
+     \caption{以前のバッテリホルダ}
+     \label{1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{2.jpg}
+     \caption{作成した新しいホルダ}
+     \label{2}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{3.jpg}
+     \caption{Oリング}
+     \label{3}
+  \end{center}
+\end{figure}
+
+\begin{thebibliography}{1}
+
+\small
+
+\vspace{-2mm}
+\bibitem{vibration}
+\label{vibration}
+``Vibration Damping'', \\
+http://ardupilot.org/copter/docs/common-vibration-damping.html common-vibration-damping, 2019年6月4日閲覧.
+
+%\bibitem{ラベル}
+%著者，
+%題名，
+%誌名＋ページ，
+%年月.
+
+\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

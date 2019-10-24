@@ -1,0 +1,171 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/9/5 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{センサの統合}
+以前から述べているようにオプティカルフローセンサの値をカルマンフィルタに組み込むことを目標にセンサなどのシステムの構成を見直している．今までの構成をfig.1に示す．ここにオプティカルフローセンサを統合しなければならない．そこで，初め，Fig.1上のArduino Pro Miniに対してオプティカルフローセンサも繋ぎ，SPI（オプティカルフローセンサボード上のフローセンサ）とI2C（オプティカルフローセンサボード上の距離センサ）を読み込ませようとした．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/system_1.PNG}
+     \caption{今までのシステム構成}
+     \label{1}
+  \end{center}
+\end{figure}
+
+
+しかし，先週から引き続き，2つのSPI機器が競合する問題を解決しようと試みてきたが，解決には至らなかった．CSピン（SPI通信にてどのセンサと通信するかを切り替えるピン）の信号をオシロスコープで見てみたが，フローセンサ側の信号は規則正しい一定周期の矩形波になっていたが，UWB側の信号は短い区間でHigh側とLow側が不規則に入れ替わるような信号であった．片方のSPIセンサずつの場合はうまく動作することから，おそらくUWB側にうまく通信できない原因があると考えている．片方のセンサが動いた後にdelayを挟むことや，割り込み処理をかけて動作させてみたが，どの方法もうまくいかなかった．
+
+そこで，重量が多少が増えるがArduino Pro Miniを2つ積んでそれぞれのセンサ値を処理することを考えている．Fig.2に新たに検討したシステムを示す．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/system_2.PNG}
+     \caption{新たに検討したシステム構成}
+     \label{1}
+  \end{center}
+\end{figure}
+
+Navio2にはUART及びSPIポートが搭載されているため，今まではArduinoを経由したUWBの信号をUARTで集め，距離センサの値を直接I2Cにて集めていた．新たにオプティカルフローセンサの値を処理したArduinoを追加する必要があるため，UWBにて用いていたArduinoはI2C接続に変更し，オプティカルフローセンサボードに載った距離センサ及びフローセンサの値を処理したArduinoをUART接続することで全ての値をうまく集めようと考えている．したがって，現在はI2C接続されたUWBモジュールの値を受け取れるようにプログラムを書いている最中である．UWBから送られてくる距離データの4つ（Tagから4つのAnchorまでの距離）は全てint型の2Byteの数値であるが，I2Cにて送ることが可能な数値は1Byteずつのため，送り側のArduinoと受け側のRaspberry Piにてうまく数値を処理しなければならない．したがって，そのプログラムに少々苦労している．処理の内容はint型の数値を上位Byteと下位Byteに分け，配列に代入し，bit演算してから送ることなどである．しかし，現在Arduino-Raspberry Pi間のI2Cが上手く動かず，UWBモジュールの値はおろか，適当な変数でさえ，ArduinoからRaspberryに渡せていない状況である．PythonにてI/O errorを吐いているため，通信エラーが考えられる．この方法も上手くいかないとすれば，さらに別の通信方法を考える必要がある．
+
+（追記）Raspberry PiとArduino間のI2C通信についてさらに詳しく調べたところ，Raspberry Piの設定ファイルのI2Cのbaudrateが高すぎると，通信が上手く働かないということに行き着いた．そこでbaudrateを調整したところ，errorを吐かなくなり，上手く通信できるようになった．しかし，まだI2C通信に用いるコマンドを使いこなせていなく「5」という数字をArduinoから送っても「65285」という1Byte目が全て1になるような数字になってしまった．したがってこのコマンドをうまく使えるように現在プログラミング中である．
+
+
+
+
+\section{今後の予定}
+\begin{itemize}
+\itemsep=-1ex
+  \item I2C通信を用いたUWBモジュールのデータの取得方法の確立
+\end{itemize}
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

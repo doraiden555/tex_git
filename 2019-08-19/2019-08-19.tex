@@ -1,0 +1,177 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/8/19 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{オプティカルフローセンサの検証}
+以前述べた，カメラタイプのオプティカルフローセンサの動作検証をまず行った．フォーカスリングを調整した上でPixracerに接続し，Mission Plannerにて値を確認したが，きちんと動作していることが確認できた．しかし，初め，オプティカルフローセンサを接続したところ，全く動く気配がなかった．そこで，調べたところ，Ardupilotは距離センサの値が入力されていない場合，移動量を計算してくれず，またセンサがきちんと接続されているかどうかもわからないという仕様であることがわかった．オプティカルフローセンサ自体，地面までの距離がわかっていないと移動量が計算できないのはあたりまえではあるが．距離センサを適切に接続することでオプティカルフローセンサも動作するようになった．また，Fig.2左側の超音波センサを用いて距離も測定してみたが，測定可能範囲内の近い距離であっても，値が発散し，使い物にならないことがわかった．したがって，この場合の距離の入力は普段のドローンにも使用している距離センサ（VL53L0X）の値を用いた（Fig.1）．
+
+
+\vspace{2zh}
+次に今と同じオプティカルフローセンサをArduinoに接続し，専用のライブラリを用いて角度や移動量を推定してみた．しかし，プログラム中にて変数の初期化ができていなくてエラーを吐いたり，角速度センサにて推定した角度とオプティカルフローセンサの値を足してよくわからない方法で移動量を計算したりしていることなど，信頼性に少し欠けるので，このライブラリを用いるのが適切かどうかはもう少し検討する必要がある．また，光源が不足しているためか，地面の上で動かしてみても移動量の反応が少ないため，このカメラタイプのセンサを使うには多くの論文で述べられている通り，もう少し適切な光源を用意する必要があるかもしれない．
+
+
+
+\vspace{2zh}
+以上の理由により，このカメラタイプのセンサは使いこなすのが少し難しいと判断し，また室内で飛行させる分には搭載された距離センサの使用範囲内（約2 m）で十分カバーできるため，一旦以前に使用していた光学式のセンサをメインに用いることを考えている．そこで光学式センサのキャリブレーションを行った．オプティカルフローセンサにて推定可能なのは速度（単位時間あたりに移動したピクセル数）なのでそれを積分し係数をかけることにより移動量（mm）を計算できる．推定される速度のキャリブレーションを行いところだが，速度の真値を得るのは難しいので，速度を積分した距離の値をキャリブレーションし，係数を求めることで，積分する前の速度もキャリブレーションするという方法をとった．Fig.3に真値とセンサー値とで線形近似したグラフを示す．レールに沿ってセンサを動かし，真値とセンサー値とで点をプロットした．今回の実験では高さを一定にし（真値：775mm，センサ値の平均：778.6mm），距離センサからの値を用いて補正をかけたが，次は別の高さにおいてもこの係数にて適切に移動距離を推定可能か確認する予定である．また，センサがピッチ，ロール方向に傾いた際のフロー値の補正方法についても検討していくつもりである．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/VL53L0X.jpg}
+     \caption{距離センサ}
+     \label{1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/CUAV.jpg}
+     \caption{カメラタイプのオプティカルフローセンサ}
+     \label{2}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/cali.png}
+     \caption{オプティカルフローセンサのキャリブレーション}
+     \label{3}
+  \end{center}
+\end{figure}
+
+
+
+
+\section{今後の予定}
+\noindent ・学会用論文の執筆\\
+\noindent ・オプティカルフローセンサのドローンへの実装
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

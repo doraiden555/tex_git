@@ -1,0 +1,68 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  田中研  前刷り用スタイルファイル
+%  Resume.sty
+%
+%  使い方  \documentclass[a4paper]{jarticle}
+%          \usepackage{Resume}
+%
+%  1999.01.19	T.Koyama
+%  2001.10.05	T.Koyama	田中研スタイルへ衣替え
+%  2002.05.19	T.Koyama	章タイトルのインデントを削除
+%  2002.11.29	T.Koyama	subsectionのピリオドを修正
+%  2003.03.14	T.Koyama	全面改装
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\typeout{**************************************************}
+\typeout{ 田中研究室 前刷り用スタイルファイル　　　}
+\typeout{ ver.03.03.14　　　　　　　　　by T.Koyama}
+\typeout{**************************************************}
+
+%%%種々のスタイルファイルの読み込み%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\usepackage{twocolumn}%
+\usepackage{ascmac}%
+%\input{tpic2.sty}%
+%\input{bmp.sty}%
+
+\def\dopics{\par\vskip\parskip\centerline{\box\graph}}%\vskip\parskip}%
+\def\dopic{\par\vskip\parskip\centerline{\box\graph}\vskip\parskip\par}%
+
+%%%ページスタイル%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{empty}%
+\raggedbottom%
+
+%%%マージンの設定%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setlength{\oddsidemargin}{-7mm}%
+\setlength{\evensidemargin}{\oddsidemargin}%
+\setlength{\topmargin}{-20mm}%
+%\setlength{\headsep}{0pt}%
+%\setlength{\headheight}{0pt}%
+%\setlength{\footheight}{0pt}%
+%\setlength{\footskip}{0pt}%
+\setlength{\textheight}{255mm}%
+\setlength{\textwidth}{170mm}%
+\setlength{\columnsep}{10mm}%
+
+%%%文字間隔，行送りの設定%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\kanjiskip = -0.05zw plus 0.1zw minus 0.05zw%
+\renewcommand{\baselinestretch}{0.8}%
+
+%%% 字下げは漢字１文字%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\parindent = 1zw%
+
+%%% アイテムのフォント%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\labelenumi}{(\arabic{enumi})}%
+\renewcommand{\labelenumii}{(\alph{enumii})}%
+\renewcommand{\labelitemi}{・}%
+\renewcommand{\labelitemii}{\bf --}%
+\renewcommand{\labelitemiii}{*}%
+\renewcommand{\topfraction}{1.0}%
+\renewcommand{\textfraction}{0.0}%
+\renewcommand{\bottomfraction}{1.0}%
+
+%%% 章，節のフォント%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\thesection}{\arabic{section}.}%
+\renewcommand{\thesubsection}{\thesection \arabic{subsection}}%
+
+%%% 図番，表番%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\fnum@figure{Fig.\thefigure}  %図 -> fig.
+\def\fnum@table{Table \thetable}  %表 -> Table
+

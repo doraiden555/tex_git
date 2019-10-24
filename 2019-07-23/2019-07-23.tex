@@ -1,0 +1,198 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/7/23 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{静止時の位置推定精度の再確認}
+以前（かなり前）に飛翔部屋内にて，地面に予め計測した点を打ち，その上にドローンを置き，ドローンの静止時における位置推定実験を行った．学会に出す用の論文にもこの位置推定の精度を示す必要があるため，データを整理していたのだが，画像データしか見つからず，数値データが残っていなかったため，広い空間にて再確認する意味も込めて実験室にて再実験を行った．床に可能な限り正確に距離を測った上で4つの点を取った．それぞれの座標は$(x, y)$ = (0, 0) (0, -3) (4, -3) (4, 0)である．その点の上にドローンを20秒間静止させ，次の点へ移動させるということを4点において繰り返した．その際の位置推定結果を次の図に示す．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1.2\linewidth]{./figure/position_verification_1.png}
+     \caption{静止時の位置推定結果}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+図より分かるように，目標点は床にマークしたが，線まで描かなかったので移動中の軌跡は歪んでいるが，目標点での定常値は概ね目標値に近い値を取っている．
+
+
+
+
+\section{3点でのPoint to point}
+先週に引き続き，3点でのPosition to pointの位置制御実験を行った．それぞれの目標座標はPoint0：(0.0, 0.0, 1.0) Point1：(1.5, -1.0, 1.0) Point2：(-1.5, 1.0, 1.0) である．高さ方向の制御に関しては前回の天井衝突事故もあるので（トラウマ）しばらく無しの方向で実験をしていくつもりである．図からわかるように原点での位置保持性能は概ね良好であるが，Point1, 2における収束値が目標値より20cmほどの誤差があることがわかる．$Ki$の調整次第でもう少しこの定常偏差を小さく出来ると考えられる．また，動画からも分かるように$Kp$が強いため，点間の移動の速度が速く，オーバーシュートによる事故が怖いので$Kp$は要調整である．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1.2\linewidth]{./figure/position_control_2019_07_19_01.png}
+     \caption{Point to pointの位置制御結果}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+また，位置制御中においてヨー角をPixracerのコンパス値＋角速度積分値及びNavio2における角速度の積分値を用いて制御しているにもかかわらず，制御の開始時と終了時においてヨー角が目測で10°ほどドリフトしているため，この対策も考える必要がある．次の図にヨー角の推定値を示す．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/yaw.png}
+     \caption{今回の実験におけるヨー角の推定値}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+推定値は目標値の0°から最大で約9°ドリフトしていることが分かる．
+ヨー角が真値よりずれると，回転行列に影響し，位置推定値及び位置制御にも影響するため，ヨー角がドリフトすることは望ましくない．Pixracer内臓のコンパスはあまり精度が良くないらしく，また電源線やモータからの磁気ノイズの影響を受ける．したがって，屋外におけるLoiter飛行（GPSを用いた位置保持飛行）をする際には次の図のようなフライトコントローラに内蔵のものとは別の外部コンパスをESCから遠ざけるように棒の先端につけて用いられることが多い．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.9\linewidth]{./figure/sku_338463_5.jpg}
+     \caption{外部コンパス}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+
+この外部コンパスはGPSとセットになっていることが多く，室外向けなのかもしれない．しかし，コンパスだけなら室内においても精度良くヨー角が推定できるのかもしれないので，現在調査中である．
+
+
+
+\section{今後の予定}
+\noindent ・学会用論文の執筆\\
+\noindent ・範囲を広げたPoint to pointの位置制御
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

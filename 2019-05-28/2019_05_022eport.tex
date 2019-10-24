@@ -1,0 +1,172 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/05/28 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{実験室での位置制御実験}
+前回に引き続き，実験室にてドローンの位置制御実験を行った．前回のミーティングではカルマンフィルタから求めたヨー角の推定値がおかしいといった事象があったが，プログラムを修正することで正しい値を得た．しかし，理論上，間違っているはずのヤコビアンを正しい値に修正すると，ヨー角の推定値がおかしくなるといった状況のため，もう少しこの推定値がおかしくなる理由を探る必要がある．ちなみに，赤堀さんが以前に作成したプログラムでは理論上正しい値であったため，単純なミスではなく意図的に書き換えた可能性があると考えている．
+
+
+ヨー角の算出式の離散化した項のみを考えると
+\begin{equation}
+\textbf{f}_{t}(\textbf{x}(t)) = \textbf{x}(t) + \textbf{f}(\textbf{x}(t))\Delta t
+\end{equation}
+
+より
+
+\begin{equation}
+\psi (t+1) =
+\psi (t) + (q\sin \phi / \cos \theta + r \cos \phi / \cos\theta)\Delta t
+\end{equation}
+
+%
+状態ベクトルを
+$\textbf{x} = [\Theta] = (\phi ,\theta ,\psi) ^ {T} $とし，上式を偏微分し，
+ヤコビアンを求めると
+
+
+
+%\begin{align} 
+%\textbf{A}(t-1)=\frac{\partial \textbf{f}(\textbf{x})}{\partial \textbf{x}}\right|_{\textbf{x}=\hat{\textbf{x}}(t)}　
+%=
+%\left[
+%    \begin{array}{c}
+%       (q\cos\phi / \cos \theta - r \sin \phi / \cos \theta )\Delta t \\
+%	(q\sin \phi \sin \theta / (\cos \theta) + r \cos \phi \sin \theta / (\cos\theta) )\Delta t 
+%    \end{array}
+%\right]
+%\end{align}\
+
+
+
+\begin{align} 
+\textbf{A}(t-1)
+=
+\left[
+    \begin{array}{c}
+        (q\cos\phi / \cos \theta - r \sin \phi / \cos \theta )\Delta t \\
+	(q\sin \phi \sin \theta / (\cos \theta)^2 + r \cos \phi \sin \theta / (\cos\theta)^2 )\Delta t \\
+     1
+    \end{array}
+\right]^{T}
+\end{align}\
+
+となる．しかし，なぜかプログラムでは3項目の値が1ではなく0となっていた．この数値を1とすると，ヨー角がおかしくなる．古いプログラムも精査し，引き続き理由を調査する．
+
+
+
+
+
+\section{オプティカルフローセンサの動作検証}
+オプティカルフローセンサを一定距離動かして，距離を求め，どれくらい誤差が出るかの実験を行った．方法はy方向を固定し，x方向のみにセンサを移動可能なレール上にてセンサを往復させた．オプティカルフローセンサの地面からの距離は780mmである．Fig.1が距離センサを用いて求めた高さを基に移動距離を補正したものであり，Fig.2は距離センサの値を用いずに，距離を固定したものである．
+
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{1.png}
+     \caption{距離センサの値を参照した結果}
+     \label{1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{2.png}
+     \caption{距離を固定した結果}
+     \label{2}
+  \end{center}
+\end{figure}
+
+距離センサからの値はかなり分散が大きいので，距離センサの値を用いたほうがオプティカルフローセンサの結果にも誤差が乗りやすい予想であったが，距離を固定したものであっても誤差の乗り方はそれほど変わらないという結果を得た．また固定したy方向に関しては値にほとんど変動がなかった．今回は地面からの距離を780mmとしたが，次はあらゆる高さにセンサを設定して同じ実験を行いと思う．
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

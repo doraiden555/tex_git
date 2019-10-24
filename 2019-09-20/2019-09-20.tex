@@ -1,0 +1,213 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/9/20 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{プログラムの作製}
+以前のミーティングにて話したようにオプティカルフローセンサ及びUWBの全てのセンサ値を取得できるようになったため，それらを組み合わせた位置推定用のプログラムを作製中である．カルマンフィルタを用いた位置推定のプログラムの一部は以前に赤堀さんが作製したものをそのまま流用し，加筆，修正する形で用いてきた．しかし，赤堀さんは処理を関数やクラスにまとめることはほとんどなく，上から処理を順番に書いていくタイプであったので，変数の受け渡しや，関数間の繋がりが非常に分かりにくかった．したがって，今回大きなプロラムを書き直すにあたり，それぞれの処理を別の関数にわけ，
+グローバル変数をあまり多用しないものに改めながら，書き進めている．また，一つ一つの関数にコメントを付け加え，それぞれの関数がどういった処理を行っているのかを一見して分かるような工夫も行っている．現在の進捗度は2種類のセンサ値を組み合わせた位置推定プログラムは完成した．しかし，事象でも述べる通信エラーの問題のため，意図した動作は行えていない．
+
+
+\section{I2C通信における不具合}
+以前にも述べた通り，I2C通信においてUWBの値をRaspberry Piに送った際に上位Byteと下位Byteが混ざって値がおかしくなるといった症状は改善できた．しかし，I2C通信中にRaspberry Piが「IOError: [Errno 5] Input/output error」という通信エラーを吐いてしまい，通信がストップすることが頻繁にある．また，それらの発生するタイミングは開始してから数秒から数分と様々である．現在考えられる原因はハード側，ソフト側の2通りがある．1つ目はノイズが影響するハードの問題である．調べたところ，I2C通信は基板上でのIC間の通信に用いるように開発された規格であり，長距離の通信にはあまり向いておらず，長距離になるとコードにノイズが乗り，信号波形がなまり（角が丸くなる），信号をうまくうけとれなくなるということがわかった．防ぐためにはコードを短くすることや，コードをアルミホイルなどで包んでシールドすることが有効らしい．さらに2つ目の原因は前回にも述べた通り，Raspberry Pi側にて設定可能なI2Cのボーレートのや通信する際の遅延（delay）の設定が最適に調整できておらず，通信の際に発生するタイミング的な問題であると考えている．一度オシロスコープを用いて波形を確認し，波形がなまっていないか，またエラーが発生した際にどのような波形になっているかを確認しなければならないと考えている．
+
+\section{フライトコントローラ（Pixracer）を用いたPWM信号の制御}
+飛行ロボコンにて救援物資を投下するといったミッションがあるが，今まではPixracerにて送信機からの指令値を受け取り，その信号をRaspberry Pi zeroに送信し，値に応じてPWM信号を生成してサーボモータに送り，角度制御するというものであった．したがって，2つのコンピュータ間の通信が遅いことやRaspberry Pi zeroの処理能力が低いことが原因で送信機のスイッチを操作してから物資が投下されるまでに1秒ほどの遅延があり，箱に投下するのが多少難しいとされていた．そこで，Pixracerからブラシレスモータを制御する以外のPWMを直接出せないかと調べたところ，その方法が存在した．本来はUAVを用いて救援物資や配送の荷物を目的地にて投下することや，カメラのジンバルを制御するのを目的に開発されたものである．Pixracerには元々6つのPWM信号が出力可能なピンがある（Fig.1）．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/Pix.png}
+     \caption{Pixracerのピン配置\cite{1}}
+     \label{}
+  \end{center}
+\end{figure}
+
+図から分かるように1から4まではクアッドなどのブラシレスモータを制御するためのピンであるが，5,6ピンに関してはAUXピンであるため，ブラシレスモータ以外の飛行に関係のない機器をPWM信号を用いて制御可能である．なお，1から4ピンに関してはESCを制御するため，400Hzで更新されるが，5，6ピンは一般的なサーボモータと同様の50Hzで更新されるため，サーボモータを制御するのに適している．また，Pixracerからサーボモータを動かすほどの電流を取ることは不可能なため，1から6ピンまでのいずれかの中央の＋ピンに電源を流せば，内部で繋がっているため，サーボモータに電源を供給することが可能である（Fig.2）．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/Servo_Pixhawk.jpg}
+     \caption{サーボモータとPixhawkの接続図\cite{2}}
+     \label{}
+  \end{center}
+\end{figure}
+
+また，Mission Planner（Pixracerのパラメタを書き換えるソフト）を用いてリリース時とピック時のPWM幅も変えられるため，自由にサーボモータの角度も調整することが可能である．この機能を用い，サーボモータを制御したところ，今まではスイッチ操作から動き出すまでに1秒ほどかかっていたものがほぼ遅延なしにサーボモータの角度を制御可能になった．将来，これらをうまく活用すれば，別のマイコンにてPWMを読んで何かを制御するなどといった事が可能ではないかと考えている．さらに山崎が以前紹介した市販のEPM（Fig.3）はPWM信号やCAN通信を用いて制御可能であり，ArdupilotのフォーラムでもあらかじめGPSで設定した地点に救急キットを落とす例を紹介していた(Fig.4)\cite{3}．
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/EPM_Pixhawk.jpg}
+     \caption{EPMとPixhawkの接続図\cite{3}}
+     \label{}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/1.png}
+     \caption{救急キットの固定方法\cite{3}}
+     \label{}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/2.png}
+     \caption{救急キットとクアッドロータ\cite{3}}
+     \label{}
+  \end{center}
+\end{figure}
+
+これらを参考に将来，天井に対してEPMを用いて機体を吸着させる際にも専用の受信機をクアッドに搭載することなく吸着と離脱などを制御可能であると考えている．ちなみにこのEPMは「OpenGrab EPM V3 R5C」という名前で159.99ドルにて販売されている\cite{4}．
+
+
+\section{今後の予定}
+\begin{itemize}
+\itemsep=-1ex
+  \item プログラムの通信エラーの解消
+　\item 位置推定値の妥当性の検証
+\end{itemize}
+
+
+
+\begin{thebibliography}{99}
+\bibitem{1}Pixracer, https://docs.px4.io/v1.9.0/en/flight\_controller/pixracer.html
+\bibitem{2}Servo Gripper, http://ardupilot.org/copter/docs/common-gripper-servo.html
+\bibitem{3}Electro Permanent Magnet Gripper (EPM688), http://ardupilot.org/copter/docs/common-electro-permanent-magnet-gripper.html
+\bibitem{4}Nica Drone, https://nicadrone.com/products/epm-v3
+\end{thebibliography}
+
+
+
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

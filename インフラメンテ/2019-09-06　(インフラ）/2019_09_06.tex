@@ -1,0 +1,191 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/9/6 インフラUAVミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{オプティカルフローセンサから得た値のカルマンフィルタへの組み込み}
+以前にも示したUWBおよび加速度センサの値を用いて推定した位置座標を基に位置制御を行った結果をFig. 1に示す．
+
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[clip, width=5.0cm]{./fig/position_control_origin_2_copy.png}
+    \caption{Result of static position hold experiment for 2 minutes}
+    \label{position_control_origin}
+  \end{center}
+\end{figure}
+
+図から分かるように，定常偏差が存在するのに加え，クアッドロータが目標値付近にて細かく振動しているのが分かる．この振動を取り除くことを目的に速度推定が可能なオプティカルフローセンサモジュールを搭載し，カルマンフィルタに組み込む予定である．地面の模様を基準に移動量（速度）を計測できるようにFig. 2のように下向きにオプティカルフローセンサを取り付けた．
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[clip, width=8.0cm]{./fig/flow.png}
+    \caption{Optical flow sensor attached to the ground}
+    \label{position_control_origin}
+  \end{center}
+\end{figure}
+
+オプティカルフローセンサの値を Arduino Pro Mini にて拾い，シリアル通信にてRaspberry Pi に送っている．センサの軸がクアッドロータの座標系と揃うようにプログラムで修正し，$x$,$y$ 方向の速度及び変位を推定する実験を行った．この実験ではUWB は使用せず，内部の加速度センサの積分値とオプティカルフローセンサの速度値のフュージョンである．Fig. 3 に推定した速度，Fig. 4 に変位を示す．なお，オプティカルフローセンサから得る速度の値は対象物との距離によって変化するので距離センサの値を基にキャリブレーションしてある．
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[clip, width=8.0cm]{./fig/velocity.png}
+    \caption{Estimated velocity using the optical flow sensor}
+    \label{position_control_origin}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[clip, width=8.0cm]{./fig/displacement.png}
+    \caption{Estimated displacement using the optical flow sensor}
+    \label{position_control_origin}
+  \end{center}
+\end{figure}
+
+まず，速度のグラフより，オプティカルフローセンサのみの値は谷と山にて細かく振動しているのに対し，推定値は加速度センサの値も加わることによりその振動を抑えることができており，位相遅れもほぼないことが分かる．現在，クアッドロータの位置制御では，現在座標と目標座標とで PID 制御を組んでいるが，D 項は偏差の微分を用いている．この項に対し，本実験で推定した速度を用いることができれば，位置制御中の機体の細かい振動を取り除くことができると考えている．
+
+次に変位のグラフであるが，推定値とオプティカルフローセンサの積分値にオフセット誤差があるのは，速度を積分し始める時間が Arduino の方が先で RaspberryPi では遅れて積分し始めるからである．このグラフも速度の結果と同様にオプティカルフローセンサの細かい振動を加速度センサの効力により取り除けていることが分かる．今後はUWB からのセンサ値も組み込んで位置，速度推定をしていくつもりである．
+
+
+
+\section{オプティカルフローセンサをシステムに組み込むにあたって}
+オプティカルフローセンサを組み込む前の以前までのシステム構成をFig. 5に示す．
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[clip, width=8.0cm]{./fig/system_1.png}
+    \caption{Previous system configuration.}
+    \label{position_control_origin}
+  \end{center}
+\end{figure}
+
+次にオプティカルフローセンサをシステムに組み込んだ図をFig. 6に示す，
+
+\begin{figure}[h]
+  \begin{center}
+    \includegraphics[clip, width=9.0cm]{./fig/system_2.png}
+    \caption{Following system configuration with optical flow sensor}
+    \label{position_control_origin}
+  \end{center}
+\end{figure}
+
+
+以前まではUWBからのデータをArduino Pro MiniにてSPI通信で拾い，UART通信にてRaspberry Piに送っていた．そこへオプティカルフローセンサが加わるため，新たに改善する構成ではArduinoにて処理したUWBの値をI2C通信にて拾い，新たに追加する2つ目のArduinoにてオプティカルフローセンサの値を処理し，UARTにてRaspberry Piへ送ることを考えている．しかし，現在I2C通信にてうまく値を拾えていないので改善していく予定である．
+
+\section{今後の予定}
+\begin{itemize}
+\itemsep=-1ex
+  \item UWB+オプティカルフローセンサを用いた位置の推定，制御
+\end{itemize}
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{vibration}
+%\label{vibration}
+%``Vibration Damping'', \\
+%http://ardupilot.org/copter/docs/common-vibration-damping.html common-vibration-damping, 2019年6月4日閲覧.
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

@@ -1,0 +1,188 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/10/9 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{飛行ロボコンの反省及び先週ミーティングを休んだお詫び}
+今年の飛行ロボコンでは去年学んだ反省点を活かし，機体の改良及び効果的な練習に取り組むことにより，去年になし得なかった優勝を得ることができた．また，今年も反省点がいくつか出てきた（稀にArmできなくなる問題，Althld modeにすると急激に高さが変化する，映像が混線するなど）ので卒業するまでに可能な限り技術の引き継ぎや改善点のディスカッションなどを行い，来年までに可能な限りそれらを潰しておきたいと考えている．Qiitaにも改善点の改善方法などについてアイデアをまとめてあるので是非見ておいてほしい．
+
+先週は休んで申し訳ありませんでした．ロボコンからの内定式の二日間で身体が壊れてました．これからも頑張ります．
+
+\section{I2C通信における不具合}
+以前から述べていたI2C通信における通信の不具合であるが，先々週にアドバイスを頂いたとおり，I2Cは長い距離での通信が不向きであることや，仮に今の構成で地静止状態において通信が上手くできるようになったとしても，飛行中の振動でエラーを吐いてしまうと位置制御どころではなくなるのでI2Cを用いてUWBセンサの値を得ることを根本的に見直し，Fig. 1に示すようなマイコンを2台連結する形で2種類のセンサ値を得ることにした．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/3.png}
+     \caption{新たに考案したシステム構成}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+ここでポイントはArduinoにて得たUWBの値をUART通信を用いてTeensyに送り，オプティカルフローセンサの値と合わせてRaspberry Piに送っていることである．ArduinoにはUART用のシリアルポート（よく見るRx，Tx）がついているのだが，UnoやPro Miniでは1つしかついておらず，複数機器とシリアル通信（特にUART）するには別のデジタルピンを用い，Software Serialというプログラム上でポートを切り替えることにより複数機器とのシリアル通信が可能になる．しかし，デジタルピンを擬似的なシリアルポートにしているため，複数機器に対して同時にシリアル通信をすることは不可能であり，どうしても遅延が発生してしまうことがわかった．しかし，Teensy3.6のスペックを調べたところSPI，I2Cポートを除き，全部で6つのシリアルポートを備えていることがわかった．したがって，Software Serialといったプログラムに頼ることなくハード的に安定して複数の機器と同時にシリアル通信が可能であることがわかった．Teensyの解説サイトのシリアルの項目に詳しくHardware SerialやSoftware Serialの方法やライブラリの使用法が載っているので参考にしてほしい．図の構成にてUWB，オプティカルフローセンサ，距離センサを計測してみたが，特にといった遅延もなく，それぞれの値が計測でき，シリアル通信を行うパソコンに値を表示することができた．初期の目標であった1つのマイコン（Teensy）にて各種センサの値を得るということは達成できなかったが，結果的に1つのマイコンを増やすだけで全てのセンサ値を得られるようになったので時間はかかったものの，これはこれで良しと考えている．また，Teensy3.6ではまだ少し大きく，現在製作中の新しい大型クアッドであってもスペース的に厳しいと考えているのでTeensy LCや新しく発売されたTeensy4.0などにして小型化することも考えている．
+
+ここでTeensy4.0についてであるが，今年の後期に発売されたばかりのArduino Pro Miniと同様の大きさのマイコンであり，スペックはFig. 2に示すように他のArduinoや従来のTeensyを遥かに超えるCPUスペックであり，デジタルピンの数が少々減るものの，複数のSPIポートやI2Cポートを備えている．また，先に述べたUART用のポートも7つ持っている．値段も現在は\$19.95とTeensy3.6の1/3ほどであるため，利点が多いように考えられる．しかし，欠点としてはSDスロットが標準では装備しないため，後付で専用のシールドをはんだ付けする必要があることぐらいである．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/coremark_barchart.png}
+     \caption{Teensy4.0のCPUスペック}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+\section{クアッドの製作進捗状況}
+ディストリビューションボードの配置も決まり，ESCも固定できたので後はフライトコントローラ類を載せ替えたら大方完成する予定である．しかし，先にも述べたとおりセンサ類が多いので断線に気をつけつつうまく取り回したいと考えている．
+
+
+\section{今後の予定}
+\begin{itemize}
+\itemsep=-1ex
+  \item 新しいクアッドの完成
+　\item オプティカルフローも組み込んだ位置推定精度の検証
+\end{itemize}
+
+
+
+%\begin{thebibliography}{99}
+%\bibitem{1}Pixracer, https://docs.px4.io/v1.9.0/en/flight\_controller/pixracer.html
+%\bibitem{2}Servo Gripper, http://ardupilot.org/copter/docs/common-gripper-servo.html
+%\bibitem{3}Electro Permanent Magnet Gripper (EPM688), http://ardupilot.org/copter/docs/common-electro-permanent-magnet-gripper.html
+%\bibitem{4}Nica Drone, https://nicadrone.com/products/epm-v3
+%\end{thebibliography}
+
+
+
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

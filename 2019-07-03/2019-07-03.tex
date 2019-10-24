@@ -1,0 +1,190 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/7/3 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{UWBモジュールの測距キャリブレーション}
+UWBのTagのプログラムは測距周期向上などのマイナーチェンジ等は各所，修正してきたが，要である測距のキャリブレーションに至っては赤堀さんが作製した当時より手をつけずにいた．以前のバージョンだと，Anchorに電源を入れる順番により，各UWB間で計測される距離が微妙に違うという経験を赤堀さんがしていたため，電源を入れる順番が違っても同じ様に測距できる様にプログラムを改良してあった．しかし，全てのAnchorをTeensyに換装後，自身でテストしたところ，つなぐ順番によって計測される距離が変わったり，各Anchor間で大きく数値に違いがあったりするということはなかった．そこで，以前までの修正プログラムを廃止し，実際の距離とUWBにより測距される距離とで誤差を引くことでキャリブレーションを行い直した．Fig．1にキャリブレーションした後の測距結果を示す．リファレンスは1m～5mまでの各1m刻みである．なお，50cm以下付近では大きく測距精度が落ち，測距される値が負の値になるなどして信頼性が欠けるため（実用上問題ないが），1m以下では測距していない．図より分かるようにスペック通りの十分な精度を持っていることが分かる．キャリブレーションでは各UWBにて同じ値を引いたがUWBの個体差を考慮して違う値を用いればUWB間の誤差をもう少し詰めれるかもしれない．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{UWB_cal.png}
+     \caption{キャリブレーション後の距離測定結果}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+\section{ヨー角の推定値の見直し}
+位置制御がうまくいっていないことを鑑みて，ヨー角の推定が上手くいっていないことを疑った．そこで推定方法を見直した．ヨー角の値はカルマンフィルタを用いた位置の推定の際や位置を制御する際に大きく関与しているため，UWBを用いた位置の推定がいくら上手くいっていてもヨー角がおかしいと，それらに大きな影響を及ぼす．NAVIO2に搭載される地磁気センサのキャリブレーションが面倒なため，今までは角速度の積分値のみを用いてヨー角を算出していた．したがって，誤差が生じてヨー角がドリフトしていた．そこで，カルマンフィルタにおける角速度を積分してヨー角を推定する状態方程式はそのままにし，観測方程式のヨー角の観測値にPixracerからのヨー角の推定値を用いるようにカルマンフィルタを組み直した．Fig．2に模式図を示す．Raspberry Piで推定するヨー角は高い周波数において推定できるが，ドリフトを含む．それをPixracerからの地磁気センサも用いた推定値で補正することで精度の高いヨー角が得られると考えた．PixracerとRaspberry Pi間の通信は10Hｚ程度と低いが，Raspberry Piで高い周波数で推定できていることやヨー角はピッチ角やロール角ほど高い周波数で推定する必要がないため，問題ないと考えている．これにより，以前まではヨー角の推定値が1フライト後（特に制御なし）に30°ほどドリフトしていたのが，10°以下までに収まった．また，ArdupiloにおけるESCのキャリブレーションも行い，ブラシレスモータごとの出力差が小さくなったため，ヨー角がドリフトして回るということも軽減した．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{yaw_estimate.png}
+     \caption{ヨー角の推定模式図}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+
+\section{3地点でのドローンの移動}
+上記のようなUWBモジュールのハード，ソフトにおける改良やヨー角の推定方法の見直しをした後，1点での位置保持実験を行ったところ，体感として以前より保持性能が上がったと感じたため，3点での移動をする実験を行った．プロポのトリガーを切り替えることで原点$(x,y,z)=(0.0,0.0,0.0)$，Point1：$(0.0,-0.8,1.0)$，Point2：$(0.0,+0.8,1.0)$の3点を移動させた．なお，スロットル制御に関しては以前の実験と同様に緊急時に備え，自身で行った．位置の推定値をFig．3に示す．また，その実験時の指令信号も合わせて示す．－1の時がPoint1の指令を与えている時であり，＋1の時がPoint2の指令を与えている．そしてFig．4に$x-y$平面内での移動軌跡も示す．
+
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{position.png}
+     \caption{3点での位置制御結果}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{horizontal_position.png}
+     \caption{$x-y$面内での移動軌跡}
+     \label{}
+  \end{center}
+\end{figure}
+
+図より，位置の指令を出すと約20cm以内の精度で位置を保持できていることが分かる．また，常に目標値が0の$x$方向も多少の振動はあるものの，0に近い値を取れている．また，この実験とは別に3点での位置保持に加え，前回，単体だと上手くいった高さ制御も加えてみたが，やはり同時だとまだまだうまくいかなかった．したがって，高さ制御も位置保持制御と同時にできるよう詰めていく予定である．
+
+\section{今後の予定}
+\noindent ・高さ制御及び，位置保持制御を同時に出来るよう調整\\
+\noindent ・オプティカルフローセンサの制御への組み込み方の検討
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

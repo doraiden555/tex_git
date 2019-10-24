@@ -1,0 +1,197 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/6/25 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{UWBモジュールのマイコンの換装及び距離測定実験}
+前回のミーティングにてTag：Teensy3.6×1，Anchor：Teensy3.6×1という組み合わせにて約30Hzにて距離測定が可能になったということを述べたが，今週はTag：Teensy3.6×1，Anchor：Teensy3.6×2にて距離測定実験を行った．Fig．1に示すように棒の先端にTagを取り付け，Fig．2の2個のAnchorを手に持ち，Tag側にアンテナが向くようにして遠ざけていった．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{20190621_175547.jpg}
+     \caption{Tagの固定方法}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{20190621_172500.jpg}
+     \caption{作製した2つのAnchor}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+
+
+その結果をFig．2，3に示す．これらの結果はFig．2が短距離モードで，Fig．3が長距離モードでの実験結果である．短距離モードでは約38Hz,長距離モードで約25Hzで計測できていた（時刻によって粗密あり）．図から分かるように所々において，マルチパスの兆候が見られる．また，短距離モードでは40mを超えた辺りから，長距離モードでは50mを超えた辺りから電波を受信できなくなり，計測が途切れるといったことが発生した．また，この際にレーザ距離計を用いて真値も測ったが，UWBにて計測した距離と真値とでは大きな差はなかった．そして，2つの結果に置いて両方共，2つのAnchor間で計測した距離が大きく違うということはなかった．しかし，30cmほどの真値からのオフセット誤差は2つのAnchorに存在する．Anchorを2つにしても周波数が大きく落ち込まないのは意外ではあった．UWBのスペック上は300mの測距が可能とされているが，おそらくサンプリングレートを限りなく落として通信を絞れば可能になると考えられる．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{スライド1.PNG}
+     \caption{短距離モードを用いた測距結果}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{スライド2.PNG}
+     \caption{長距離モードを用いた測距結果}
+     \label{}
+  \end{center}
+\end{figure}
+
+\section{UWBのAnchor間通信を用いた座標の算出の調査}
+安川君に貰った参考論文\cite{1}を参考にAnchor間通信を用いたAnchorの位置座標推定方法について少し勉強した．5つのAnchorを用いてそれらの絶対座標を求める方法を以下に示す．なお，この文献では計算を簡略化するために5個の内，3つのAnchorを同じ高さになるよう設置するとのことである．
+
+\begin{itemize}
+\itemsep=-1ex
+  \item 1個目のAnchorの座標を$(x,y,z)=(0,0,0)$と設定する．
+  \item 2個目のAnchorは座標系の$x$軸上に乗っているとすると，その座標は$(d_{12},0,0)$となる（$d_{number}$はUWBにて計測したAnchor間の距離を表す）．
+  \item 3個目のAnchorの座標はそれぞれのUWBの計測距離を用いて$(x,y,z)=({d_{12}}^2 +{d_{13}}^2-{d_{23}}^2/(2d_{12}),\sqrt{{d_{13}}^2-x^2},0) $とニュートン法やテイラー級数展開などを用いて計算できる\cite{2}．
+  \item 4個目，5個目のAnchorの座標はそれぞれのAnchor間との距離より，最小二乗法を用いて算出する\cite{3}．
+\end{itemize}
+
+自身の研究ではAnchorの絶対座標を測ってから設置するが，将来的に橋梁などにAnchorを取り付けるといった際にはこの様なAnchorの座標を推定できる方法を検討していく必要がある．しかし，Anchorをドローンで設置する際に，高さが同じになるように設置するのは難しいのでこの方法はあまり現実的ではないかと思われる．また，UWBのTagとAnchorの機能の切り替えは簡単に出来ることがGitなどを読むことにより分かった．また，先生や安川とは話していたが，UWBのTagやAnchorとしての機能を切り替えるためのフラグなどをどの様にPCや手元から送るかの方法を検討中である．一般的に市販されるUWBモジュールはWifiによってその機能を制御しているため，Wifiの方向で現在は考えている．	
+
+
+
+
+\section{今後の予定}
+\noindent ・Anchor（Teensy）を量産してのTag×1，Anchor×4測距を行い，サンプリングレートを確認する\\
+・UWB＋マイコン＋PC間との通信機器（Wifiなど）を搭載したAnchor間通信が可能な基盤の作製，評価（安川と）
+
+\begin{thebibliography}{1}
+
+\small
+
+\vspace{-2mm}
+\bibitem{1}
+\label{1}
+Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+Implementation and UAV Performance Evaluation''
+
+%\bibitem{ラベル}
+%著者，
+%題名，
+%誌名＋ページ，
+%年月.
+
+\small
+
+\vspace{-2mm}
+\bibitem{2}
+\label{2}
+ M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+no. 1, pp. 1–4, 2016.
+
+
+\small
+
+\vspace{-2mm}
+\bibitem{3}
+\label{3}
+A. Norrdine, “An algebraic solution to the multilateration problem,”
+in Proceedings of the 15th International Conference on Indoor Posi-
+tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+
+\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

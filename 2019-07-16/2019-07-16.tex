@@ -1,0 +1,191 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/7/16 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{ドローンの修理}
+以前のミーティングにてドローンの高さ方向の制御のパラメタを調整している際に天井にぶつかってUWBの基盤が壊れたという話をした．この暴走した原因としては，PID制御のパラメタの調整ミスではなく，単なるプログラムのミスにより，0割りの部分があり，これによってスロットルの入力値が発散していたことが原因であった．すぐにこのプログラムは修正した．そして，故障箇所は比較的すぐに修理できた．しかし，その後また同様の実験をした際，次は地面と接地し，信号線などの線がプロペラにより切断され，暴走し，地面と衝突した．故障箇所は・PixracerからESCへ伸びる信号線　・Arduino Pro MiniとRaspberry Piを結ぶUARTの線　・受信機のアンテナ線　・プロペラガード　・バッテリホルダ　・着地用の足　である．ケーブル類は，はんだ付けにより早急に修理したが，バッテリホルダと着地用の足を再設計し，3Dプリンタで出力するのに時間がかかってしまった．製作したバッテリホルダ及び，足を次の図に示す．また以前使用していた足も合わせて示す．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/20190716_113115.jpg}
+     \caption{製作したバッテリホルダ}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/20190716_123525.jpg}
+     \caption{製作した着地用足}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/leg.jpg}
+     \caption{以前の着地用足}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+以前に用いていたものは機体の中心部に4箇所でネジ止めされ，樹脂製のアームの先に二本のアルミ棒が付いているという形状であった．この足は軽いドローンに対してはアームがしなることで，着地時の衝撃吸収に役に立つかもしれない．しかし，現状の600gほどのドローンでは着地に失敗すると，ほぼ胴体着陸のような形をとっていた．そこで，色々なドローンの写真を参考に図のような新しい足を設計した．この足は中心から伸びるタイプの足ではなく，プロペラの真下に位置するようなものである．参考にしたのがDJIのF450（ホイールベースは450mm）という機体の足である．次の図にプロペラの真下に来るタイプの足と中心から伸びるタイプの足の写真を示す．図はどちらも同じ機体であるが，中心から伸びるタイプは高さが稼げるため，機体の下側にカメラやジンバルを配置できるところにメリットがあると考えられる．どちらのタイプが耐衝撃性が高いかは分からない．飛行が上手くいけば，この足を量産しようと考えている．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/short.jpg}
+     \caption{参考にしたプロペラの真下にあるタイプ}
+     \label{}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=0.7\linewidth]{./figure/long.jpg}
+     \caption{中心から伸びるタイプ}
+     \label{}
+  \end{center}
+\end{figure}
+
+今回の高さ制御の実験で思ったのが，高さ制御は$xy$平面内における位置制御と制御手法（PID制御）は全く同じだが，失敗したときのリスクがとても大きいと感じた．$xy$平面を移動するだけなら，多少暴走しても制御を切り，マニュアルに切り替えればリカバーできるものの，高さ方向で失敗すると，墜落するか，天井にぶつかるかの二択のため，リカバーが非常に難しいと感じた．しばらく（学会の資料が集まるまで）は高さ方向の制御は諦め，$xy$平面内での位置制御（スロットル制御はマニュアル）に注力しようと考えている．
+
+
+\section{今後の予定}
+\noindent ・学会用論文の執筆\\
+\noindent ・学会用資料集め（以前より範囲を広げたPoint to pointの位置制御）
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
