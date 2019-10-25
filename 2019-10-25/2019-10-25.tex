@@ -1,0 +1,239 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/10/25 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{gitの勉強}
+今まではGitはGithubにて人のリポジトリをクローンしてArduinoのライブラリやPythonのモジュールを使用させてもらうにとどまっていたが，現在書いているクアッドの位置推定プログラムなどのバージョン管理をしようということでGitを導入することにした．今までは開発中のプログラムの別バージョンを作りたい場合，名前を微妙に変えてバージョンを進めていたが，これだと，プログラムのどの箇所を変えたかや，どのバージョンが最新かが分からなくなることがあった．そこでGitを使い，こまめにバージョン管理をすることによってこれらの問題は解決することができるようになった．また，クアッドに搭載したRspberry Pi上のプログラムをいじる際にはいちいちRaspberry PiにSSH接続し，対象のプログラムを書き換える，もしくはRaspberry Piに接続せずに予め書いたプログラムをSSH接続した際にコピーするという面倒な作業を行っていた．しかし，Gitを用いることで，予め書いたプログラムをリモートリポジトリに上げることでリポジトリごとRaspberry PiにPullしてくることが可能なため，開発を早くすることができた．開発においてかなり労力を削減可能なので是非ロボティクスのQiitaを参考に導入してみてほしい．あと将来的に修士の研究はプログラムや論文を含め，全てGitにて引き継ぐことを予定しているため，現在進行系で引き継ぎ用のリポジトリやREADMEを作成中である．
+
+
+\section{新しいクアッドへの装備の換装}
+以前から製作していた新しいクアッドに対して装備の換装を行った．まず一旦Navio2を積まずにPixracerのみを積んで組み上げた（fig. 1）．そして実験室にて飛行試験を行ったところ，設計通り10分弱ほど飛行させることが可能であった．また，この時の重量はバッテリー含め872.5gであった．次にfig. 2の様に以前のクアッドと変わらない装備にて飛行もさせたが，以前ほどスラストに余裕がない感じではなく，安定して離陸させることが可能であった．この状態の重量は1042gであった．飛行時間はまだ検証できていない．以前にも述べた通り，UARTを2つ読めるマイコンが必要なため，Teensyを乗せる必要がったが，手近にあったTeensyが3.6しかなかったため，これを積んでいるが，軽量化のためにTeensyLCなどに換装することを予定している．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/f330_pix.png}
+     \caption{Pixracerのみ積んだクアッド}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/f330_navio2.png}
+     \caption{以前のクアッドより必要なパーツを換装した状態のクアッド}
+     \label{}
+  \end{center}
+\end{figure}
+
+また，このプロペラは穴を拡げる追加工を行ったものであるが，飛行に関しては全く問題はないものの，柔らかいプロペラ特有の回転中にたわんで音が鳴ることやスラストが少し出し切れていない感じがするため，もう少し剛性の高いプロペラに替えれば，さらにモータの出力を効率よく引き出すことが可能であると考えている．
+
+
+\section{オプティカルフローセンサの値も参照した位置推定}
+以前にも示したfig. 3のシステム構成での動作検証及び，前章のような換装が済んだため，実際にクアッドを地面の上で移動させながら位置推定をする実験を行った．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/system.png}
+     \caption{UWB及びオプティカルフローセンサにおけるシステムの構成図}
+     \label{}
+  \end{center}
+\end{figure}
+
+実験方法としては以前に行っていた方法と同様に地面に原点を取り，その位置から前後左右方向に1mずつ移動した点にマークを打ち，原点を含む5点を順に移動させて位置を推定するというものである．今までのシステムに対してオプティカルフローセンサの値も参照した際の結果及びオプティカルフローセンサの値（速度）を単純に積分し，位置推定したものを示す．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/uwb.png}
+     \caption{オプティカルフローセンサの値も参照した場合の結果}
+     \label{}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/opt.png}
+     \caption{オプティカルフローセンサから得た値（速度）を積分したのみの結果}
+     \label{}
+  \end{center}
+\end{figure}
+
+オプティカルフローセンサの速度推定の周波数は24Hzであり，位置推定の周波数は17Hzである．オプティカルフローの周波数は実験上これが限界であったが，位置推定の周波数が低いのは単純なミスであり，今後修正予定である．まず，オプティカルフローセンサも参照した際の結果は以前の結果と同様に床に置いた定常状態において，10mmから200mm程度の分散があるが，リファレンスに近い値の座標を推定できていることがわかる．この分散がある原因はUWBのタグと各アンカとの測定距離に分散があることが原因だと言える．次にオプティカルフローセンサのみの結果は定常状態における分散はほぼないことがわかる．しかし，$(x, y) = (0, -1)$の点や原点においてリファレンスから200mm～300mm程度ドリフトしていることがわかる．この原因としては，点間の移動中にヨ－角が回ってしまい，$x$軸方向にしか動かしていない際にも$y$軸方向に移動成分が乗ってしまい，このような真の値からのドリフトが発生していると考えられる．
+
+次にUWB及びオプティカルフローセンサのカルマンフィルタにおける分散を調整し，オプティカルフローセンサの観測値の度合いを高めた場合の位置推定結果は次のようになった．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/uwb_2.png}
+     \caption{カルマンゲインを調整した際の結果（オプティカルフローセンサ成分強め）}
+     \label{}
+  \end{center}
+\end{figure}
+
+図より，定常状態においてもリファレンスからの分散が小さいことがわかる．しかもリファレンスからのドリフトも補正できている．
+もう少しゲインの調整に時間をかけてUWBとオプティカルフローセンサの良いところを引き出せるようなフィルタを組む予定である．
+
+\section{Raspberry Piにおける電源供給不足問題}
+前章で述べたとおり，今回の位置推定におけるループ周波数は以前よりも低かったため，高めようとディレイを調整した．しかし，ループを速くすると，Raspberry Piの電源ランプ（通常は常時点灯）が点滅し，位置推定の最中にデータが落ちるという現象にみまわれた．おそらく，原因としてはループ周波数を上げると，CPUに負荷がかかり，消費電力が大きくなったためこのようなことが起きたと考えられる．以前に同様の周波数においてこの現象が起きなかったのは，現在の構成に比べ，デバイス数が少なく，消費電力が小さかったためだと考えられる（fig. 3参照）．したがって，現在はNavio2からTeensyやオプティカルフローセンサ，UWBに電源を供給しているため，これらへの供給をディストリビューションボードからの安定化電源に切り替えることを予定している．\\
+
+\textbf{（追記）}
+ディストリビューションボードからの電源供給コネクタは作製完了．ループ周波数を高めてRaspberry Piが落ちないかの操作試験をおいおい行う予定である．
+
+
+
+
+\section{今後の予定}
+\begin{itemize}
+\itemsep=-1ex
+  \item カルマンゲインの調整
+　\item サンプリングレートの調整
+  \item ヨー角が回転した際のドリフト問題の解決
+　\item 位置推定値の精度検証（飛行中など）
+  \item 電源問題の解決
+　\item デバイス換装による軽量化
+\end{itemize}
+
+
+
+%\begin{thebibliography}{99}
+%\bibitem{1}Pixracer, https://docs.px4.io/v1.9.0/en/flight\_controller/pixracer.html
+%\bibitem{2}Servo Gripper, http://ardupilot.org/copter/docs/common-gripper-servo.html
+%\bibitem{3}Electro Permanent Magnet Gripper (EPM688), http://ardupilot.org/copter/docs/common-electro-permanent-magnet-gripper.html
+%\bibitem{4}Nica Drone, https://nicadrone.com/products/epm-v3
+%\end{thebibliography}
+
+
+
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
