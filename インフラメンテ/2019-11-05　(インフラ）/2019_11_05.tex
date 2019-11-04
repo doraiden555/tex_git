@@ -1,0 +1,146 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/11/05 インフラUAVミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{それぞれのセンサ値をうまく取得できるようになった件}
+以前の本ミーティングにて示した，オプティカルフローセンサ及びUWBからの値を得るためのシステム構成を再度Fig. 1に示す．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./fig/system_2.PNG}
+2     \caption{以前に示した通信方式にI2Cを用いたシステム構成}
+     \label{}
+  \end{center}
+\end{figure}
+
+この構成ではドローンに設置したUWBタグの距離データをArduinoにて受け取り，それをI2C通信にてRaspberry Piへ送る．また，別のArduinoにて受け取ったオプティカルフローセンサの値をUART通信にてRaspberry Piへ送ることで各種センサの全ての値を適切に処理することを考えた．しかし，実際にこの構成にて値を取得しようと試みた所，UWBの値を受け取ったArduinoとのI2C通信が不安定になり，安定してデータを受け取ることが不可能であった．具体的には，Raspberry Pi上のコンソールにてInput/Outputエラーという通信エラーを吐き，通信が途中で止まってしまうというものであった．通信エラーの原因として考えられるのは電気ノイズが通信線に乗ってしまったというハード的な問題とプログラムにおけるボーレートの設定やdelayなどの遅延が適切に管理できておらず，値を受け取る前に次の値を要求してエラーが起きるソフト的な問題などが考えられる．各種対策を試してみたが，根本的な解決には至らなかったため，I2C通信による通信は諦め，UWRT通信を2つ用いる方法を新たに考案した．そのシステムをFig. 2に示す．
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./fig/with_teensy_lc.png}
+     \caption{改良したシステム構成}
+     \label{}
+  \end{center}
+\end{figure}
+
+以前の構成と同様にセンサ値取得用に2つのマイコンを使用していることは変わりないが，1つのマイコンをTeensyという別のマイコンに換装した．このマイコンは今まで用いてきたArduinoとは異なり，同時に2つのUART通信を処理することが可能である．したがって，以前まではRaspberry Piの二種類の通信方式（I2C＋UART）を利用し，別々のマイコンを処理していたが，改良後はRaspberry Piの通信はUART通信の1つに絞り，Teensyにて集めた値を処理した後，まとめてRaspberry Piに送る方式に変更した．この構成にて各種センサの値をきちんと収集可能かテストした所，通信が途中で途切れることなくデータを得ること可能であった．
+
+\section{今後の予定}
+\begin{itemize}
+\itemsep=-1ex
+  \item UWB+オプティカルフローセンサを用いた位置の推定，制御
+\end{itemize}
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{vibration}
+%\label{vibration}
+%``Vibration Damping'', \\
+%http://ardupilot.org/copter/docs/common-vibration-damping.html common-vibration-damping, 2019年6月4日閲覧.
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
