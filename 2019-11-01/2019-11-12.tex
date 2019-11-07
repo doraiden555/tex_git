@@ -1,0 +1,220 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/11/12 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{オプティカルフローセンサから得た速度のワールド座標系への変換}
+前回のミーティングにてオプティカルフローセンサから得た速度を積分することにより，クアッドの位置を推定した結果を示した．しかし，その結果はドローンのヨー角の回転を考慮できていなかった．そこで次の式に示すような$x, y$平面におけるヨー角の回転行列をオプティカルフローセンサから得た速度に対してかける必要がある．ここでオプティカルフローセンサから得られるセンサ座標系での速度を$\textbf{v}_\textbf{o} = [v_{ox}, v_{oy}]^{T}$，ワールド座標系での速度を$\textbf{v}_\textbf{w} = [v_{wx}, v_{wy}]^{T}$とする．
+
+\begin{align}
+\begin{split}
+\left[
+    \begin{array}{c}
+      v_{wx}  \\
+      v_{wy}
+    \end{array}
+\right]
+= 
+\left[
+    \begin{array}{cc}
+      \cos\psi & -\sin\psi \\
+      \sin \psi & \cos\psi
+    \end{array}
+\right]
+\left[
+	\begin{array}{cc}
+		v_{ox}  \\
+		v_{oy}
+	\end{array}
+\right] \\
+=
+\left[
+    \begin{array}{c}
+      v_{ox}\cos\psi  -v_{oy}\sin\psi \\
+      v_{ox}\sin\psi + v_{oy}\cos\psi
+    \end{array}
+\right]
+\end{split}
+\end{align}\
+
+この式により速度を補正することで，きちんとしたワールド座標系での速度を得られるようになる．ここで以前に行った原点を目標座標とした位置保持実験時におけるオイラー角の推定結果を示す．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/position_control_origin_angles.png}
+     \caption{原点を目標座標とした際の位置保持実験時における角度推定値}
+     \label{}
+  \end{center}
+\end{figure}
+
+図よりヨー角は最大約7.2°のドリフトが生じていることが分かる．また次に位置保持実験ではなく，4点に順にクワッドを置いて座標の推定を行った実験の際のオイラー角の推定値を同様に示す．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/position_verification_angles.png}
+     \caption{地面において4点を移動させた際の角度推定結果}
+     \label{}
+  \end{center}
+\end{figure}
+
+理由はまだわかっていないが，同じプログラムを用いているのにも関わらず，地面に置いて静止させた際の方がドリフト量が大きくなっていることが分かる．この図では最大約24°のドリフトが発生している．現在，ヨー角の推定はNavio2から得た角速度の積分値とPixracer（角速度＋地磁気のフュージョン）から得た推定値をカルマンフィルタにおいてフュージョンすることにより行っている．しかし，Pixracer単体におけるヨー角の推定値を見ていても静止状態においてさえ，徐々にドリフトしているとこがあるため，Pixracerにおける地磁気キャリブレーションをもう少し丁寧に行うことや，電源モジュールから地磁気センサへの電気干渉を補正してくれる機能がPixracerにあるため，これを有効にすることなどを検討している．
+
+\section{クアッドのハード改良}
+以前からご指摘下っさていたようにクアッドの重心が高く，安定性に欠けるため，延長足を取り付け，PixracerをNavio2よりも下側に，またディストリビューションボードを以前よりも下方に移すことにより重心を下げた．またPixracerに対する振動は角度推定などにおいて悪影響を及ぼすことが考えられるため，新たにダンパー付きのマウントを作製し，Pixracerの制振を図っている．
+
+
+
+
+
+\section{今後の予定}
+\begin{itemize}
+\itemsep=-1ex
+  \item カルマンゲインの調整
+　\item サンプリングレートの調整
+  \item ヨー角が回転した際のドリフト問題の解決
+　\item 位置推定値の精度検証（飛行中など）
+  \item 電源問題の解決
+　\item デバイス換装による軽量化
+\end{itemize}
+
+
+
+%\begin{thebibliography}{99}
+%\bibitem{1}Pixracer, https://docs.px4.io/v1.9.0/en/flight\_controller/pixracer.html
+%\bibitem{2}Servo Gripper, http://ardupilot.org/copter/docs/common-gripper-servo.html
+%\bibitem{3}Electro Permanent Magnet Gripper (EPM688), http://ardupilot.org/copter/docs/common-electro-permanent-magnet-gripper.html
+%\bibitem{4}Nica Drone, https://nicadrone.com/products/epm-v3
+%\end{thebibliography}
+
+
+
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
