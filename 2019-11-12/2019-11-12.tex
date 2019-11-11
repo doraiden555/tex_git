@@ -101,21 +101,43 @@
 以前からご指摘下っさていたようにクアッドの重心が高く，安定性に欠けるため，延長足を取り付け，PixracerをNavio2よりも下側に，またディストリビューションボードを以前よりも下方に移すことにより重心を下げた．またPixracerに対する振動は角度推定などにおいて悪影響を及ぼすことが考えられるため，新たにダンパー付きのマウントを作製し，Pixracerの制振を図っている．
 
 
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/front.png}
+     \caption{改良したクアッド（前面）}
+     \label{}
+  \end{center}
+\end{figure}
 
 
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/back.png}
+     \caption{改良したクアッド（背面）}
+     \label{}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/pixracer.png}
+     \caption{制振マウントされたPixracer}
+     \label{}
+  \end{center}
+\end{figure}
+
+また，UARTポートを2つ使用可能なTeensy3.6の代わりに小さなTeensy LCを乗せる必要があったため，NCでユニバーサル基板を切り出し，Teensy LC及び，UWB，Arduino Pro Miniを搭載した基板を新たに製作した．また，以前に（恐らく）電力不足でRaspberry Piの動作が不安定になっていたため，それも解決すべく3つのチップ（Arduino Pro Mini，UWB，Teensy LC）の電源はバッテリーから直接引いている．
 
 \section{今後の予定}
+
 \begin{itemize}
 \itemsep=-1ex
-  \item カルマンゲインの調整
-　\item サンプリングレートの調整
-  \item ヨー角が回転した際のドリフト問題の解決
-　\item 位置推定値の精度検証（飛行中など）
-  \item 電源問題の解決
-　\item デバイス換装による軽量化
+  \item サンプリングレートの調整
+  \item ヨー角が回転した際のドリフト問題の解決 ←プログラムの実装完了．要テスト
+  \item 位置推定値の精度検証（飛行中など）　
+  \item 電源問題の解決　←実装完了．要テスト
+  \item デバイス換装による軽量化　←完了
 \end{itemize}
-
-
 
 %\begin{thebibliography}{99}
 %\bibitem{1}Pixracer, https://docs.px4.io/v1.9.0/en/flight\_controller/pixracer.html
