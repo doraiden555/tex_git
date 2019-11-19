@@ -1,0 +1,225 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/11/19 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{実験装置の改良}
+前回のミーティングにて，地面にとった4点において位置推定をするという実験を行った．その実験の目的は位置推定にオプティカルフローセンサの値も参照することによって推定精度を上げることが可能かどうかの確認である．しかし，与えられた4点を移動する際に手に持って空中を移動させたため，精度に影響するのではないかとの指摘を受けた．そこで実験装置を改良し，台の上に置いたドローンを移動させる形にした．fig. 1にその様子を示す．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/drone_with_stand.jpg}
+     \caption{台に取り付けられたクアッド}
+     \label{}
+  \end{center}
+\end{figure}
+
+図から分かるようにクアッドの足にタイラップを用いてアルミ棒を取り付け，その先を台に固定した．また，クアッドのオプティカルフローセンサ付近にはレーザポインタが床を向くように配置した（fig. 2）．そして床面にはfig. 3に示すような対角線が2mの正方形を描いた．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/laser.jpg}
+     \caption{オプティカルフローセンサの横に取り付けられたレーザポインタ}
+     \label{}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/reference_point.png}
+     \caption{床に描かれた参照点（線）}
+     \label{}
+  \end{center}
+\end{figure}
+
+レーザポインタが光り続けるように細工をし，床に照らされたレーザー光が床に描かれた正方形をトレースする形で台をゆっくり動かした．推定結果をfig. 3に示す．また合わせて前回の推定結果も合わせて示す．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/position_estimation_with_laser.png}
+     \caption{改良した実験機にて推定した結果}
+     \label{}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/uwb_2.png}
+     \caption{空中でクアッドを動かして位置推定を行った結果}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+なお，この実験時には以前に述べた推定ループを速くすると，電源不足によりRaspberry Piが落ちるという問題は解決できており，以前の実験時には24Hzであった周波数が54Hzにまで向上している．したがって移動中のルートにて振動成分が乗っているのはサンプリングレートが高いためであると考えられる．また，前回の結果同様$(x, y) = (1, 0)$の点においてDOPの影響からか推定値の分散が大きくなっている．また，多々なるプログラムの書き換えにより，UWBのマルチパスへのフィルタリング機能がうまく働いておらず，マルチパスの影響により推定値が$(x, y) = (0.5, 0.8)$付近において発散している．これらの結果より，台を用いて線をトレースする形で位置推定を行っても，それほど大きく精度が向上するという結果は得られなかった．しかし，各休止点では手持ちと異なってクアッドが静止状態にあるため，以前より分散が小さくなっていると言える．次に本試行時におけるオプティカルフローセンサから得た速度計測値も示す．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/v_opt.png}
+     \caption{オプティカルフローセンサから得た速度計測値}
+     \label{}
+  \end{center}
+\end{figure}
+
+図より，20s，60s付近において静止状態においても微振動を計測している事が分かる．これの原因としては，クアッドの固定に用いたアルミ棒が台の移動中にしなり，その振動が静止状態においても収まらなかったためだと言える．また，この試行時のオプティカルフローセンサ値の積分値も次に載せる．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/opt_sum.png}
+     \caption{オプティカルフローセンサから得た速度の積分値}
+     \label{}
+  \end{center}
+\end{figure}
+
+図より分かるように，本来なら移動距離が1mでなければいけないが，それがおよそ0.6mとなっており，正確に移動距離を算出できていないことが分かる．原因としては，先にも述べた通り，棒の振動により，正の方向に動かしている際にも負の速度が乗ってしまい，積分値に影響を与えたことや，オプティカルフローセンサの下側に余計なケーブルが垂れており，それが観測時に影響を与えた（ケーブルは被らないよう改良済み）ことなどが考えられる．これらのことより，次回はきちんと振動対策やマルチパスの発生に対する処理を行った上でもう一度実験を行う予定である．
+
+
+\section{今後の予定}
+
+\begin{itemize}
+\itemsep=-1ex
+  \item 実験器具の振動対策
+  \item マルチパス発生時の処理プログラム
+\end{itemize}
+
+%\begin{thebibliography}{99}
+%\bibitem{1}Pixracer, https://docs.px4.io/v1.9.0/en/flight\_controller/pixracer.html
+%\bibitem{2}Servo Gripper, http://ardupilot.org/copter/docs/common-gripper-servo.html
+%\bibitem{3}Electro Permanent Magnet Gripper (EPM688), http://ardupilot.org/copter/docs/common-electro-permanent-magnet-gripper.html
+%\bibitem{4}Nica Drone, https://nicadrone.com/products/epm-v3
+%\end{thebibliography}
+
+
+
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
