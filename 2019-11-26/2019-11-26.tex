@@ -1,0 +1,231 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/11/26 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{UWB発散値フィルタリング機能の改善}
+前回のミーティングにて述べたUWBからの値が発散した際のフィルタリング機能が働いていない問題を解決した．前に書いていたプログラムが上手く働かなかった理由は配列を別の配列に代入した際，コピーを行っていたつもりであったが，実は参照渡しを行ってしまっていたために，意図しない挙動が発生してしまっていことが原因である．発散した値を弾くためにDD\_old[x]（xは0から3の対応するUWBアンカ）という変数に前に送られてきたUWBの距離データを一旦バッファし，次に送られてきた距離データ（DD[x]）と比べた際に変化量がしきい値を上回った場合，その直近の値を破棄するというものである．このDD\_oldという値を初期化する際に，DD\_old[x] = DD[x]としてしまったために，DD\_oldとDDが同じ参照先（同ID）を持つようになり，常にDD\_oldとDDが同じ値を格納するようになってしまった．Pythonでは配列1＝配列2という処理を書くと，配列2の値が配列1にコピーされるのではなく，同じ参照先（ID）を参照するようになるため，配列1,2のどちらかが更新されると，それに伴ってもう一つの配列の値も更新される．したがって，DD\_old = DDは値のコピーではなく，同じ値をとるような処理になっていることがわかる．そのため，DD\_oldとDDの変化量を取った際に，値が同じなため，必ず0を返すようになってしまっていた．対策としてはb = a[:]のようにスライスを使う．若しくはc = copy.deepcopy(a)というcopyモジュールのdeepcopyという機能を用いるのが適している．あとは単純にfor文で回して要素を一つづつコピーする方法もある．Pythonに限らずこの深いコピー，浅いコピーといったことはミスを犯しがちなので気をつける必要がある．この修正プログラムを用いて実験したところ，きちんと値を弾けるようになったので動作確認も完了している．
+
+\section{オプティカルフローセンサから正確な値が得られない原因及び実験装置の改善}
+前回の実験で，UWBとオプティカルフローセンサの値を統合した位置推定値の精度はそこそこだが，オプティカルフローセンサ値の単純積分値の精度が悪いという結果を得た（fig. 1）．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/opt_sum.png}
+     \caption{オプティカルフローセンサから得た速度の積分値}
+     \label{}
+  \end{center}
+\end{figure}
+
+この悪い精度の原因は梁がクアッド，センサに与える振動が原因だと考えていたが，実はオプティカルフローセンサのカメラの画角内に動かない障害物（台の足）がかぶっていたため，正確な流量を計測できていなかったことが本当の原因だということがわかった．次の図のようにクアッドを台に固定しているが，オプティカルフローセンサの画角を全く考慮できておらず，カメラの画角内に台の足がもろに入り込んでしまっていることがわかる．
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/quad_with_opt.jpg}
+     \caption{台に取り付けられたクアッド}
+     \label{}
+  \end{center}
+\end{figure}
+
+画角42°という仕様から高さ（800mm）を考慮して画像範囲を計算すると，カメラレンズから垂直におろした線から左右奥行方向に307mmの範囲は計測範囲内であることがわかった（fig. 3）．実際にスケールで計測してみたがやはり，307mmの範囲に足が入り込んでいた．これを改善するため，クアッドをさらに前に突き出した位置で固定し，さらにアルミフレームを共締めして振動も拾わないようにした．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/opt_obstacle.png}
+     \caption{台に取り付けられたクアッド}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/position_estimation_with_laser.png}
+     \caption{改良した実験機にて推定した結果}
+     \label{}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/uwb_2.png}
+     \caption{空中でクアッドを動かして位置推定を行った結果}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+なお，この実験時には以前に述べた推定ループを速くすると，電源不足によりRaspberry Piが落ちるという問題は解決できており，以前の実験時には24Hzであった周波数が54Hzにまで向上している．したがって移動中のルートにて振動成分が乗っているのはサンプリングレートが高いためであると考えられる．また，前回の結果同様$(x, y) = (1, 0)$の点においてDOPの影響からか推定値の分散が大きくなっている．また，多々なるプログラムの書き換えにより，UWBのマルチパスへのフィルタリング機能がうまく働いておらず，マルチパスの影響により推定値が$(x, y) = (0.5, 0.8)$付近において発散している．これらの結果より，台を用いて線をトレースする形で位置推定を行っても，それほど大きく精度が向上するという結果は得られなかった．しかし，各休止点では手持ちと異なってクアッドが静止状態にあるため，以前より分散が小さくなっていると言える．次に本試行時におけるオプティカルフローセンサから得た速度計測値も示す．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/v_opt.png}
+     \caption{オプティカルフローセンサから得た速度計測値}
+     \label{}
+  \end{center}
+\end{figure}
+
+図より，20s，60s付近において静止状態においても微振動を計測している事が分かる．これの原因としては，クアッドの固定に用いたアルミ棒が台の移動中にしなり，その振動が静止状態においても収まらなかったためだと言える．また，この試行時のオプティカルフローセンサ値の積分値も次に載せる．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/opt_sum.png}
+     \caption{オプティカルフローセンサから得た速度の積分値}
+     \label{}
+  \end{center}
+\end{figure}
+
+図より分かるように，本来なら移動距離が1mでなければいけないが，それがおよそ0.6mとなっており，正確に移動距離を算出できていないことが分かる．原因としては，先にも述べた通り，棒の振動により，正の方向に動かしている際にも負の速度が乗ってしまい，積分値に影響を与えたことや，オプティカルフローセンサの下側に余計なケーブルが垂れており，それが観測時に影響を与えた（ケーブルは被らないよう改良済み）ことなどが考えられる．これらのことより，次回はきちんと振動対策やマルチパスの発生に対する処理を行った上でもう一度実験を行う予定である．
+
+
+\section{今後の予定}
+
+\begin{itemize}
+\itemsep=-1ex
+  \item 実験器具の振動対策
+  \item マルチパス発生時の処理プログラム
+\end{itemize}
+
+%\begin{thebibliography}{99}
+%\bibitem{1}Pixracer, https://docs.px4.io/v1.9.0/en/flight\_controller/pixracer.html
+%\bibitem{2}Servo Gripper, http://ardupilot.org/copter/docs/common-gripper-servo.html
+%\bibitem{3}Electro Permanent Magnet Gripper (EPM688), http://ardupilot.org/copter/docs/common-electro-permanent-magnet-gripper.html
+%\bibitem{4}Nica Drone, https://nicadrone.com/products/epm-v3
+%\end{thebibliography}
+
+
+
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
