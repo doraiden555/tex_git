@@ -24,7 +24,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \vspace*{10mm}
 \begin{center}
-	{\Large \gt 2019/11/05 インフラUAVミーティング} \\
+	{\Large \gt 2019/12/20 インフラUAVミーティング} \\
 \end{center}
 \begin{flushright}
 \begin{tabular}{c@{~}r}
@@ -41,35 +41,136 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{それぞれのセンサ値をうまく取得できるようになった件}
-以前の本ミーティングにて示した，オプティカルフローセンサ及びUWBからの値を得るためのシステム構成を再度Fig. 1に示す．
+\section{新しいクアドロータへのシステムの移行}
+以前より赤堀さんの時代から研究に用いてきたクアドロータ（fig. 1）を新しい機体に変更した．理由としては推力不足が原因の姿勢角制御の応答性改善や新しくセンサやマイコンを追加したのでペイロードを増加させるといったことが理由である．fig. 2から4に機体の外観やセンサの搭載位置を示す．
 
-\begin{figure}[htbp]
-  \begin{center}
-     \includegraphics[width=1\linewidth]{./fig/system_2.PNG}
-2     \caption{以前に示した通信方式にI2Cを用いたシステム構成}
-     \label{}
-  \end{center}
-\end{figure}
-
-この構成ではドローンに設置したUWBタグの距離データをArduinoにて受け取り，それをI2C通信にてRaspberry Piへ送る．また，別のArduinoにて受け取ったオプティカルフローセンサの値をUART通信にてRaspberry Piへ送ることで各種センサの全ての値を適切に処理することを考えた．しかし，実際にこの構成にて値を取得しようと試みた所，UWBの値を受け取ったArduinoとのI2C通信が不安定になり，安定してデータを受け取ることが不可能であった．具体的には，Raspberry Pi上のコンソールにてInput/Outputエラーという通信エラーを吐き，通信が途中で止まってしまうというものであった．通信エラーの原因として考えられるのは電気ノイズが通信線に乗ってしまったというハード的な問題とプログラムにおけるボーレートの設定やdelayなどの遅延が適切に管理できておらず，値を受け取る前に次の値を要求してエラーが起きるソフト的な問題などが考えられる．各種対策を試してみたが，根本的な解決には至らなかったため，I2C通信による通信は諦め，UWRT通信を2つ用いる方法を新たに考案した．そのシステムをFig. 2に示す．
 
 
 
 \begin{figure}[htbp]
   \begin{center}
-     \includegraphics[width=1\linewidth]{./fig/with_teensy_lc.png}
-     \caption{改良したシステム構成}
+     \includegraphics[width=1\linewidth]{./fig/quad.PNG}
+     \caption{以前から使用してきたクアッド}
      \label{}
   \end{center}
 \end{figure}
 
-以前の構成と同様にセンサ値取得用に2つのマイコンを使用していることは変わりないが，1つのマイコンをTeensyという別のマイコンに換装した．このマイコンは今まで用いてきたArduinoとは異なり，同時に2つのUART通信を処理することが可能である．したがって，以前まではRaspberry Piの二種類の通信方式（I2C＋UART）を利用し，別々のマイコンを処理していたが，改良後はRaspberry Piの通信はUART通信の1つに絞り，Teensyにて集めた値を処理した後，まとめてRaspberry Piに送る方式に変更した．この構成にて各種センサの値をきちんと収集可能かテストした所，通信が途中で途切れることなくデータを得ること可能であった．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./fig/front.PNG}
+     \caption{クアッドの前面}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./fig/back.PNG}
+     \caption{クアッドの背面}
+     \label{}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./fig/pixracer.PNG}
+     \caption{底面に配置されたフライトコントローラ}
+     \label{}
+  \end{center}
+\end{figure}
+
+新機体の重量は約1050 gで以前のものより400 gほど増加している．また，プロペラサイズも5 inchから8 inchのものに変わっているためモータも高トルクで低回転型のものに変更した．バッテリは3cellの1800 mAhから2650 mAhに容量アップしたため，飛行時間は5分弱から10分弱ほどまでに延びた．センサやマイコンなどの飛行に関係ないシステムのおおまかな構成は以前と変わらないが，fig. 3の様にオプティカルフローセンサやそれ用のマイコンが搭載され，以前は機体の上側にあったフライトコントローラをfig. 4の様にゴムマウントで制振をした上で機体の下側に配置した．
+
+\section{センサ値の分散の違いが位置推定値に与える影響}
+クアッドロータの位置を制御する際は機体に乗ったコンピュータでリアルタイムに位置や姿勢角を計算する．しかし，今回は複数のセンサ値の分散が位置推定値にどのような影響を与えるのかを見るため，Matlabを用いてカルマンフィルタを組み，事前にロギングしたセンサ値を用いてシミュレーションを行った．シミュレーションに用いるセンサ値は次の実験よりロギングした．次の表に示す座標を目標値とし，クアッドロータを地面においては次の点へ動かすということを繰り返した．
+
+
+\begin{table}[htbp]
+\caption{目標地点の座標}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+        & x  & y \\ \hline
+Point 1 & 1  & 0 \\ \hline
+Point 2 & 0  & 1 \\ \hline
+Point 3 & -1 & 0 \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+また，クアッドを動かす際はfig. 5に示すように移動式の台に固定し，fig. 6に示すようなレーザポインタが床に描かれた線をトレースするように動かした．こうする理由は手に持って動かしてしまうと，動かしている最中にクアッドの姿勢角が振動で変化し，オプティカルフローセンサに余計な移動量が入るため，それを防ぐ目的である．また，レーザが線をトレースするようにすることできれいな直線を目標値として与えられる．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./fig/stand.jpg}
+     \caption{台に固定されたクアッドロータ}
+     \label{}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./fig/laser.jpg}
+     \caption{床を照らすように設置されたレーザポインタ}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+以上の実験環境でロギングしたセンサ値を基に分散値を変更し，位置推定値を計算した結果を示していく．まず，UWBとオプティカルフローの分散のバランスをうまく調整したものの結果を示す．分散値，[加速度センサ, UWB] = [0.4, 0.02]の2種類のセンサ，[加速度センサ, UWB, オプティカルフローセンサ] = [0.004, 0.01, 0.0006]とした3種類のセンサ，オプティカルフローセンサから得た速度の単純積分し移動距離を求めたものの3つの結果を合わせて示す．またそれの拡大図も次に示す．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./fig/result1.png}
+     \caption{バランス良く分散を調整したもの}
+     \label{}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./fig/up.png}
+     \caption{前図の拡大図}
+     \label{}
+  \end{center}
+\end{figure}
+
+2つのグラフから分かるように，青色のオプティカルフローが入っていない結果は目標点付近の座標を推定できているが，移動の過程や目標点付近では分散が大きく，線が揺らいでいることが分かる．しかし，オレンジ色のオプティカルフローも組み込んだものは目標点をUWBの効果で推定できつつ，その軌跡の分散や目標点付近での分散も小さいものになっている．黄色のオプティカルフローの積分値は軌跡に分散が少ないが，目標地点の座標から離れた位置に推定値がきていることがわかる．UWBの効果があってもきちんと真値通りの目標値が推定できないのはUWBのアンカの取付誤差やUWB同士の測距誤差などが原因として考えられる．上記の結果より，UWBとオプティカルフローセンサの分散値を適切に設定することで，どちらのセンサの良いところも引き出した推定値を得られることがわかった．
+
+次にUWB寄りに分散を設定した際の結果を示す．分散値は[加速度センサ, UWB, オプティカルフローセンサ] = [0.004, 0.000001, 0.06] （結果はオレンジ色）である．青色の結果と黄色の結果は前グラフと同一の結果である．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./fig/result3.png}
+     \caption{分散をUWB寄りにしたもの}
+     \label{}
+  \end{center}
+\end{figure}
+
+結果より，UWB寄りになったことで分散の大きいギザギザ推定結果を得た．分散は大きいもののその線は大まかに青色の線をトレースしていることも分かる．
+
+次にオプティカルフローセンサ寄りに分散を調整したものを次に示す（オレンジ色）．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./fig/result4.png}
+     \caption{分散をオプティカルフロー寄りにしたもの}
+     \label{}
+  \end{center}
+\end{figure}
+
+結果は予想できるが，オプティカルフロー寄りになったことで，線は滑らかになったが，目標点での推定座標は真値から大きく外れたものになった．
+
+
+以上より，位置推定にオプティカルフローセンサを用いる効果を十分に確認できた．次からはオプティカルフローセンサを推定に組み込んだシステムにて実際にクアッドを飛行させなが，以前までの推定アルゴリズムと比較する形で，位置制御の効果を確認していく．
 
 \section{今後の予定}
 \begin{itemize}
 \itemsep=-1ex
-  \item UWB+オプティカルフローセンサを用いた位置の推定，制御
+  \item オプティカルフローセンサも用いたクアッドロータの位置制御
 \end{itemize}
 
 
