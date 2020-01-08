@@ -1,0 +1,216 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  ロボティクス研  研究報告用TEXファイル  前刷り　（旧田中研フォーマットベース）
+%  Resume.tex
+%
+%  2003.03.14	T.Koyama
+%  2005.04.11	H.Ohtake
+%  2016.03.24	Y.Higashi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[a4paper]{jarticle}
+\usepackage{Resume}
+\usepackage[dvipdfmx]{color,graphicx}
+\usepackage{slashbox}
+\usepackage{amsmath}
+\usepackage{textgreek}%ギリシャ文字を立てにするパッケージ
+\usepackage{nidanfloat}%横長の図を1ページ内にうまく挿入する
+
+%本文圧縮コマンド(本文参照)
+%\renewcommand{\baselinestretch}{0.75}
+
+\begin{document}
+\twocolumn[
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  タイトル・氏名
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\vspace*{10mm}
+\begin{center}
+	{\Large \gt 2019/01/08 飛翔ロボットミーティング} \\
+\end{center}
+\begin{flushright}
+\begin{tabular}{c@{~}r}
+機械設計学専攻	& ロボティクス研究室	\\
+18623117		& 中村　翔太		\\
+\end{tabular}
+\end{flushright}
+\vspace{1em}
+]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  本文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{赤外線LEDの選定}
+まず，以前使用していたクアッドロータの赤外線LEDを図に示す．
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/LED_with_quad1.png}
+     \caption{以前使用していたクアッドロータの赤外線LED}
+     \label{}
+  \end{center}
+\end{figure}
+
+これに用いていたのはパワーLEDと呼ばれるLEDであり，一般的なLEDは順電圧は1.5 Vほどで，順電流は50 mAから100 mAほどであるのに対し，パワーLEDは最大2 Vで700 mAもの電流を流すことが可能であり，出力の高い光を照射することが可能である．先行研究の時代にはステレオカメラの同期の技術が確立しておらず，Raspberry Piから信号を送り，リレーを起動させてLEDを光らせることで動画間の同期をとっていた．しかし，ステレオカメラの同期方法がわかったため，このリレーは必要ないため新しいクアッドロータには次の図のように単体でLEDを搭載した．
+
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/LED_with_quad2.png}
+     \caption{新たに製作したクアッドロータの赤外線LED}
+     \label{}
+  \end{center}
+\end{figure}
+
+\noindent
+動画中でしっかりとLEDの光を認識したいと考えたため，最初パワーLEDを用い，最大許容電流である700 mAを流そうと回路を組んだ．しかし，電源を入れてみると抵抗が焼けてしまった．原因は抵抗にかかる電圧は計算上正しい電圧であるが，抵抗が許容可能な電力($\textrm{W}=RI^2$)は決められており，安い一般的な抵抗だと，1/4 Wほどである．しかし，実際にはそれの10倍もの電力がかかっていたため，焼けてしまった．安全率を考慮しつつ，抵抗の許容電力に近くなるよう計算すると，50 mAから100 mAほどになってしまった．これであると，パワーLEDを使用するメリットはなく，他の一般的なLEDに流れる電流と同じ電流になり，高出力も見込めないことがわかった．赤堀さんもパワーLEDを用いていたのにも関わらず，流していた電流は許容電流を大きく下回る値であり，このLEDを使用していた旨味はあまりなかったように思われる．したがってこのクアッドロータにはパワーLEDを搭載せずに一般的な赤外線LEDを搭載した．ちなみに，このパワーLEDをフルスペックで使用するには許容電力の大きな抵抗（セメント抵抗など）を用いるか，LEDドライバ（トランジスタの入った回路）などを用いて電圧や電流を回路で調整する必要があるらしい．次章でも述べるが，実験室においてLEDの光を認識しようとすると，蛍光灯の赤外光まで拾ってしまい，正確な計測が難しかった．レンズの絞りやシャッタースピードなどで調整しようとしてみたが，肝心なマーカーの赤外光までフィルタしてしまうため調整はシビアであった．フューチャーワーク的な対策としては蛍光灯が画角内に入らないようレンズの上部分をおおうことや，蛍光灯にかぶしをつけて間接照明にすること，または絞ってもLEDのマーカーが消えないよう上で述べたようにパワーLEDを用いてLEDの出力を上げることなどが考えられる．
+
+
+
+
+
+
+
+
+\section{位置計測を行った件}
+実験室にて真値を取った上で位置制御実験を行った．次に結果を示す．グラフの実験条件はオプティカルフローも推定に組み込んだ上で定点ホバリング制御を行ったものである．奥行方向のノイズが酷く，ローパスフィルタをかけなければいけない結果となった．フィルタを掛ける前と後のデータを示す．
+
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/graph1.png}
+     \caption{フィルタをかける前後の座標}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+\noindent
+カットオフ周波数は11 Hzである．またノイズの振幅はおよそ100 mm弱であり，カメラからクアッドロータまでの距離が6, 7 mであるため，以前に計算した奥行き誤差$+ \alpha$程度（計算上80 mmほど）である．次に$x,y$合わせたものを示す．
+
+\begin{figure}[htbp]
+  \begin{center}
+     \includegraphics[width=1\linewidth]{./figure/graph2.png}
+     \caption{$x$方向のみフィルタリングをしプロットした計測座標}
+     \label{}
+  \end{center}
+\end{figure}
+
+
+\noindent
+まだ少し$x$方向に対してノイズが残るが，うまく位置を計測できたと考える．オプティカルフローセンサの推定を切った状態でも定点ホバリングを行ったが，機体が以前と変わったため，以前のように精度良く制御するに至らなかった．また，オプティカルフローセンサを参照した制御も体感として以前より精度が落ちた感覚がある．原因は機体が変わったため，推力や重心などの機体特性が変わったのにも関わらず，位置制御のゲインを前の値と同じ値を使用しているためであると考える．また，Ardupilot側で調整可能な姿勢角制御ゲインも調整が甘いと考えられる．装備品（センサやRaspberry Pi）を積む前にある程度ゲインの調整を行ったが，本来の装備品を積んだことでそのゲインも適切でなくなったと考える．本来であればゲインを調整し，3点移動の制御もするべきであるが，修論やSIIの関係上間に合いそうにないので，今回行ったオプティカルフロー参照，非参照の結果を修論には載せるつもりである．今回の新しい機体におけるこの実験によりオプティカルフローセンサを参照したほうが位置制御の精度が上がることは確認した．
+
+
+\section{今後の予定}
+
+\begin{itemize}
+\itemsep=-1ex
+  \item 修論書く
+  \item SII練習
+\end{itemize}
+
+%\begin{thebibliography}{99}
+%\bibitem{1}Pixracer, https://docs.px4.io/v1.9.0/en/flight\_controller/pixracer.html
+%\bibitem{2}Servo Gripper, http://ardupilot.org/copter/docs/common-gripper-servo.html
+%\bibitem{3}Electro Permanent Magnet Gripper (EPM688), http://ardupilot.org/copter/docs/common-electro-permanent-magnet-gripper.html
+%\bibitem{4}Nica Drone, https://nicadrone.com/products/epm-v3
+%\end{thebibliography}
+
+
+
+
+
+%\begin{thebibliography}{1}
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{1}
+%\label{1}
+%Krzysztof Cisek，``Ultra-Wide Band Real Time Location Systems: Practical
+%Implementation and UAV Performance Evaluation''
+%
+%%\bibitem{ラベル}
+%%著者，
+%%題名，
+%%誌名＋ページ，
+%%年月.
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{2}
+%\label{2}
+% M. Pelka, G. Goronzy, and H. Hellbr¨uck, “Iterative approach for
+%anchor conﬁguration of positioning systems,” ICT Express, vol. 2,
+%no. 1, pp. 1–4, 2016.
+%
+%
+%\small
+%
+%\vspace{-2mm}
+%\bibitem{3}
+%\label{3}
+%A. Norrdine, “An algebraic solution to the multilateration problem,”
+%in Proceedings of the 15th International Conference on Indoor Posi-
+%tioning and Indoor Navigation, Sydney, Australia, vol. 1315, 2012.
+%
+%\end{thebibliography}
+
+
+
+%式
+%\begin{eqnarray}
+%\label{}
+%\end{eqnarray}
+
+%\begin{equation}
+%\label{}
+%\end{equation}
+
+%%箇条書き
+%\begin{itemize}
+%\itemsep=-1ex
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%  \item 
+%\end{itemize}
+
+%%図
+%\begin{figure}[htbp]
+%  \begin{center}
+%     \includegraphics[width=1\linewidth]{}
+%     \caption{}
+%     \label{}
+%  \end{center}
+%\end{figure}
+
+%%表
+%\begin{table}[htbp]
+%  \begin{center}
+%  \caption{}
+%  \label{}
+%  \begin{tabular}{|c||c|c|c|}	\hline
+%  &&& \\ \hline
+%  &&&\\
+%  &&&\\ \hline
+%  \end{tabular}
+%  \end{center}
+%\end{table}
+
+%スペースを詰める，あける
+%\vspace{-2zh}
+%\vspace{2zh}
+
+%  参考文献
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
